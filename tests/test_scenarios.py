@@ -27,6 +27,18 @@ class ReproducibleScenarios(unittest.TestCase):
                 self.assertEqual(len(report["timeline"]), 3)
                 self.assertTrue(all(e["kind"] == "snapshot_window" for e in report["timeline"]))
 
+    def test_synthetic_snapshots_match_lab_wiring(self):
+        backup = load("backup_failover")["fault"]["devices"][0]["commands"]
+        kernel = json.loads(backup["kernel_routes"]["stdout"])[0]
+        frr = json.loads(backup["control_routes"]["stdout"])
+        self.assertEqual(kernel["gateway"], "10.0.13.2")
+        self.assertEqual(kernel["dev"], "eth2")
+        self.assertEqual(frr["10.10.2.0/24"][0]["nexthops"][0]["ip"], "10.0.13.2")
+        blackhole = load("route_ok_blackhole")["fault"]["devices"][0]["commands"]
+        rules = json.loads(blackhole["policy_rules"]["stdout"])
+        self.assertTrue(any(row.get("action") == "unreachable"
+                            and row.get("dst") == "10.10.2.0/24" for row in rules))
+
     def test_blackhole_keeps_route_and_changes_policy(self):
         case = load("route_ok_blackhole")
         findings = compare(case["before"], case["fault"])["findings"]
