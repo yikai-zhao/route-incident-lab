@@ -1,17 +1,34 @@
-# Evidence and test status (2026-11-01)
+# Evidence and test status (2026-11-02)
 
-- Python unit tests: 26 passed in the original local v0.2.0 source package.
-- Three scenario fixtures are synthetic. They are analyzer regression tests, not live BGP convergence measurements.
-- C++ TCP connect probe was compiled and exercised against a local TCP listener.
-- Real Containerlab/FRRouting scenarios are prepared but NOT yet run end-to-end in the available execution environment.
-- No GitHub Actions workflow, scheduled job, paid API, cloud server, or public target probing.
-- Findings from route tables, BGP state and HTTP delivery are observations and heuristics, not automatic proof of root cause.
+## Implemented in source
 
-To validate on your own machine:
+- Read-only router-state capture and state diff (Linux, FRRouting).
+- Conservative Junos/IOS/EOS structured text parsers for recognized BGP peers, IPv4 routes and interfaces. Versions and unknown output lines are not treated as confirmed good state.
+- Three synthetic scenario fixtures, Python unit tests and C++ nonblocking TCP probe.
+- Three-router BGP Containerlab topology, a read-only all-peer BGP/HTTP smoke check and opt-in local fault controller.
+- Bounded continuous HTTP sampling during test faults, with sampled failure spans and possible outage-window bounds.
 
-```bash
+## Not yet independently validated
+
+- Fresh public checkout: test suite has not been executed by the assistant here; earlier 26-test pass result refers to a previous source revision, not this revision.
+- Real Docker/Containerlab: no live three-router execution or end-to-end scenario run in this environment, which lacks Docker/Containerlab.
+- Hardware: Junos, IOS and EOS text adapters have synthetic parser tests, NOT actual vendor-hardware validation.
+- The stream does not measure exact BGP convergence, true packet loss, or microsecond forwarding latency.
+
+## Verification on an authorized local Linux machine
+
+~~~bash
 python3 -m unittest discover -s tests -v
-PYTHONPATH=src python3 -m routeincident.cli scenario-demo
-```
+containerlab validate -t labs/three-router/topology.clab.yml
+cd labs/three-router
+docker build -t routeincident-endpoint:local -f Dockerfile.endpoint .
+sudo containerlab deploy -t topology.clab.yml
+cd ../..
+PYTHONPATH=src python3 scripts/lab_smoke.py --output lab-output/smoke.json
+PYTHONPATH=src python3 scripts/lab_run.py --scenario neighbor_outage --allow-faults
+PYTHONPATH=src python3 scripts/lab_run.py --scenario backup_failover --allow-faults
+PYTHONPATH=src python3 scripts/lab_run.py --scenario route_ok_blackhole --allow-faults
+~~~
 
-The test totals refer to the original downloaded source package. Confirm them again from a fresh clone before citing the public repository.
+Review each live report and the recorded continuous HTTP samples before making recovery claims.
+There are no scheduled jobs, paid services or GitHub Actions workflows.
