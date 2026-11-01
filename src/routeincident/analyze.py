@@ -159,6 +159,27 @@ def compare(before: dict, after: dict) -> dict:
             findings.append({"severity": "info", "kind": "device_set_changed", "device": name})
             continue
         old, new = a[name], b[name]
+        old_vendor, new_vendor = old.get("structured"), new.get("structured")
+        if isinstance(old_vendor, dict) and isinstance(new_vendor, dict):
+            if old_vendor.get("vendor") == new_vendor.get("vendor"):
+                for section, kind in (("bgp_peers", "vendor_bgp_peer_changed"),
+                                      ("routes", "vendor_route_changed"),
+                                      ("interfaces", "vendor_interface_changed")):
+                    before_valid = old_vendor.get("parse_status", {}).get(section) == "parsed"
+                    after_valid = new_vendor.get("parse_status", {}).get(section) == "parsed"
+                    if not before_valid or not after_valid:
+                        findings.append({"severity": "info", "kind": "vendor_parse_incomplete",
+                                         "device": name, "section": section})
+                        continue
+                    prev = old_vendor.get(section, {})
+                    nxt = new_vendor.get(section, {})
+                    for item in sorted(set(prev) | set(nxt)):
+                        if prev.get(item) != nxt.get(item):
+                            findings.append({
+                                "severity": "warning", "kind": kind, "device": name,
+                                "item": item, "before": prev.get(item), "after": nxt.get(item),
+                                "source": "vendor_text_parser",
+                            })
         old_rules, new_rules = _linux_policy_rules(old), _linux_policy_rules(new)
         if old_rules is not None and new_rules is not None and old_rules != new_rules:
             findings.append({"severity": "warning", "kind": "policy_rules_changed", "device": name,

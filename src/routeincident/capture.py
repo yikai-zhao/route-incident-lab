@@ -12,6 +12,7 @@ from typing import Any
 
 from .probe import tcp_probe
 from .profiles import PROFILES
+from .vendors import parse_vendor_commands
 
 IDENT = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*$")
 
@@ -104,15 +105,20 @@ def capture(config: dict[str, Any]) -> dict:
         "capture_started_monotonic_ns": mono_start,
         "devices": [],
         "probes": [],
+        "capture_mode": "live_observation",
     }
     for device in config["devices"]:
         commands = {label: collect_command(device, argv)
                     for label, argv in PROFILES[device["profile"]].items()}
-        output["devices"].append({
+        device_record = {
             "name": device["name"], "profile": device["profile"],
             "watch_prefixes": device.get("watch_prefixes", []),
             "commands": commands,
-        })
+        }
+        vendor_state = parse_vendor_commands(device["profile"], commands)
+        if vendor_state is not None:
+            device_record["structured"] = vendor_state
+        output["devices"].append(device_record)
     for item in config.get("probes", []):
         output["probes"].append(tcp_probe(
             name=item["name"], host=item["host"], port=item["port"],
