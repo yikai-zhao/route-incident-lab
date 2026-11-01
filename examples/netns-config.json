@@ -1,0 +1,19 @@
+{
+  "devices": [
+    {
+      "name": "ns-router",
+      "profile": "linux",
+      "transport": "local"
+    }
+  ],
+  "probes": [
+    {
+      "name": "namespace-http",
+      "host": "10.213.0.2",
+      "port": 8979,
+      "count": 5,
+      "timeout_s": 0.4,
+      "interval_s": 0.1
+    }
+  ]
+}

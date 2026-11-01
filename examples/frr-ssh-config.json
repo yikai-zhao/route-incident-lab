@@ -1,0 +1,15 @@
+{
+  "devices": [
+    {
+      "name": "lab-router",
+      "profile": "frr",
+      "transport": "ssh",
+      "host": "192.0.2.10",
+      "user": "lab",
+      "watch_prefixes": [
+        "10.10.2.0/24"
+      ]
+    }
+  ],
+  "probes": []
+}
