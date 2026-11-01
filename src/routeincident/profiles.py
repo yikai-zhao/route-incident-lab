@@ -20,7 +20,7 @@ PROFILES: dict[str, dict[str, tuple[str, ...]]] = {
         "interfaces": ("ip", "-j", "link", "show"),
     },
     "junos": {
-        "routes_raw": ("show route terse",),
+        "routes_raw": ("show route protocol bgp",),
         "bgp_raw": ("show bgp summary",),
         "interfaces_raw": ("show interfaces terse",),
     },
