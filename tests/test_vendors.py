@@ -44,7 +44,7 @@ class VendorParserTests(unittest.TestCase):
             return {"devices": [{"name": "sw1", "profile": "ios", "commands": {},
                                   "structured": {"vendor": "ios", "bgp_peers":
                                     {"10.0.12.2": {"state": bgp}}, "routes": {},
-                                    "interfaces": {}}}]}
+                                    "interfaces": {}, "parse_status": {"bgp_peers": "parsed", "routes": "parsed", "interfaces": "parsed"}}}]}
         kinds = {f["kind"] for f in compare(snapshot("Established"), snapshot("Idle"))["findings"]}
         self.assertIn("vendor_bgp_peer_changed", kinds)
 
