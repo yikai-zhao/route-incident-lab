@@ -19,6 +19,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 from routeincident.capture import capture, write_json  # noqa: E402
 from routeincident.scenarios import analyze_three_phases  # noqa: E402
+from routeincident.delivery import LocalLabHttpSampler, summarize_delivery  # noqa: E402
 
 CONTAINERS = {name: f"clab-routeincident-{name}" for name in ("r1", "r2", "r3", "h1", "h2")}
 SCENARIOS = ("neighbor_outage", "backup_failover", "route_ok_blackhole")
@@ -51,6 +52,8 @@ def preflight() -> None:
 def capture_state(config: dict, phase: str, output: Path) -> dict:
     snap = capture(config)
     snap["phase"] = phase
+    snap["lab_attestation"] = {"lab": "routeincident", "preflight_passed": True,
+                               "recorded_by": "local_lab_controller"}
     write_json(str(output / f"{phase}.json"), snap)
     return snap
 
@@ -169,24 +172,44 @@ def main(argv: list[str] | None = None) -> int:
         if before["probes"][0]["failures"]:
             raise RuntimeError("baseline HTTP delivery is not healthy; no faults injected")
         write_json(str(out / "before.json"), before)
+        sampler = LocalLabHttpSampler()
+        fault_started_ns = None
         try:
-            apply_fault(a.scenario, actions)
-            fault = capture_state(config, "fault", out)
-            fault["probes"] = [http_probe()]
-            write_json(str(out / "fault.json"), fault)
-        finally:
+            sampler.start()
+            time.sleep(0.55)  # observe healthy samples before injecting faults
+            fault_started_ns = time.monotonic_ns()
             try:
-                recover(a.scenario, actions)
+                apply_fault(a.scenario, actions)
+                fault = capture_state(config, "fault", out)
+                fault["probes"] = [http_probe()]
+                write_json(str(out / "fault.json"), fault)
             finally:
-                emergency_cleanup(a.scenario)
-        initial_wait()
-        recovered = capture_state(config, "recovered", out)
-        recovered["probes"] = [http_probe()]
-        write_json(str(out / "recovered.json"), recovered)
+                try:
+                    recover(a.scenario, actions)
+                finally:
+                    emergency_cleanup(a.scenario)
+            initial_wait()
+            recovered = capture_state(config, "recovered", out)
+            recovered["probes"] = [http_probe()]
+            write_json(str(out / "recovered.json"), recovered)
+        finally:
+            continuous_samples = sampler.stop()
+            write_json(str(out / "continuous-http-samples.json"), {
+                "source": "live_local_http_probe", "samples": continuous_samples,
+                "errors": sampler.errors,
+            })
         report = analyze_three_phases(before, fault, recovered, a.scenario, actions)
+        report["continuous_delivery"] = summarize_delivery(continuous_samples, fault_started_ns)
+        report["continuous_delivery"]["probe_errors"] = sampler.errors
+        if sampler.errors or not continuous_samples:
+            report["assertions"]["continuous_probe_healthy"] = False
+            report["assertions_passed"] = False
         write_json(str(out / "report.json"), report)
         print(f"Wrote: {out / 'report.json'}")
         print(f"Assertions: {sum(report['assertions'].values())}/{len(report['assertions'])}")
+        print(f"Continuous HTTP: {report['continuous_delivery']['attempts']} samples; "
+              f"{report['continuous_delivery']['failures']} failed HTTP observations; "
+              f"observed failure span={report['continuous_delivery']['observed_failure_span_ms']} ms")
         return 0 if report["assertions_passed"] else 1
     except (RuntimeError, OSError, ValueError, subprocess.TimeoutExpired) as exc:
         print(f"lab validation failed: {exc}", file=sys.stderr)
