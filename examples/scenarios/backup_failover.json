@@ -82,14 +82,14 @@
           "kernel_routes": {
             "ok": true,
             "exit_code": 0,
-            "stdout": "[{\"dst\":\"10.10.2.0/24\",\"gateway\":\"10.0.13.2\",\"dev\":\"eth1\",\"protocol\":\"bgp\"}]",
+            "stdout": "[{\"dst\":\"10.10.2.0/24\",\"gateway\":\"10.0.13.2\",\"dev\":\"eth2\",\"protocol\":\"bgp\"}]",
             "stderr": "",
             "duration_ms": 0.1
           },
           "control_routes": {
             "ok": true,
             "exit_code": 0,
-            "stdout": "{\"10.10.2.0/24\":[{\"selected\":true,\"protocol\":\"bgp\",\"installed\":true,\"nexthops\":[{\"ip\":\"10.0.12.2\"}]}]}",
+            "stdout": "{\"10.10.2.0/24\":[{\"selected\":true,\"protocol\":\"bgp\",\"installed\":true,\"nexthops\":[{\"ip\":\"10.0.13.2\"}]}]}",
             "stderr": "",
             "duration_ms": 0.1
           },
@@ -103,21 +103,21 @@
           "bgp_peers": {
             "ok": true,
             "exit_code": 0,
-            "stdout": "{\"ipv4Unicast\":{\"peers\":{\"10.0.12.2\":{\"state\":\"Established\"}}}}",
+            "stdout": "{\"ipv4Unicast\":{\"peers\":{\"10.0.12.2\":{\"state\":\"Idle\"},\"10.0.13.2\":{\"state\":\"Established\"}}}}",
             "stderr": "",
             "duration_ms": 0.1
           },
           "interfaces": {
             "ok": true,
             "exit_code": 0,
-            "stdout": "[{\"ifname\":\"eth1\",\"operstate\":\"UP\",\"flags\":[\"UP\"]}]",
+            "stdout": "[{\"ifname\":\"eth1\",\"operstate\":\"DOWN\",\"flags\":[]},{\"ifname\":\"eth2\",\"operstate\":\"UP\",\"flags\":[\"UP\"]}]",
             "stderr": "",
             "duration_ms": 0.1
           },
           "arp_neighbors": {
             "ok": true,
             "exit_code": 0,
-            "stdout": "[{\"dev\":\"eth1\",\"dst\":\"10.0.12.2\",\"state\":\"REACHABLE\"}]",
+            "stdout": "[{\"dev\":\"eth1\",\"dst\":\"10.0.12.2\",\"state\":\"FAILED\"},{\"dev\":\"eth2\",\"dst\":\"10.0.13.2\",\"state\":\"REACHABLE\"}]",
             "stderr": "",
             "duration_ms": 0.1
           }

@@ -96,7 +96,7 @@
           "policy_rules": {
             "ok": true,
             "exit_code": 0,
-            "stdout": "[{\"priority\":100,\"table\":100,\"fwmark\":\"0x1\"},{\"priority\":32766,\"table\":\"main\"}]",
+            "stdout": "[{\"priority\":100,\"dst\":\"10.10.2.0/24\",\"action\":\"unreachable\"},{\"priority\":32766,\"table\":\"main\"}]",
             "stderr": "",
             "duration_ms": 0.1
           },
