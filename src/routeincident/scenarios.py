@@ -119,7 +119,12 @@ def analyze_three_phases(before: dict, fault: dict, recovered: dict,
         })
     report = {
         "schema_version": 2, "scenario": scenario,
-        "evidence_level": "real_containerlab" if action_records else "synthetic_fixture",
+        "evidence_level": ("local_lab_observation" if action_records and all(
+            s.get("capture_mode") == "live_observation"
+            and s.get("lab_attestation", {}).get("preflight_passed") is True
+            and s.get("lab_attestation", {}).get("lab") == "routeincident"
+            for s in (before, fault, recovered)
+        ) else "synthetic_or_unverified"),
         "capture_windows": [
             {"phase": phase, "started_utc": s.get("capture_started_utc", s.get("timestamp")),
              "finished_utc": s.get("capture_finished_utc", s.get("timestamp"))}
