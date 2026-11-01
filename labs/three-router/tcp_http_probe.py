@@ -6,6 +6,8 @@ import datetime as dt
 import json
 import socket
 import time
+import sys
+import select
 
 
 def one(host: str, port: int, timeout: float) -> dict:
@@ -27,20 +29,37 @@ def one(host: str, port: int, timeout: float) -> dict:
 
 
 def main() -> None:
-    p=argparse.ArgumentParser()
+    p = argparse.ArgumentParser()
     p.add_argument("--host", default="10.10.2.2")
     p.add_argument("--port", type=int, default=8080)
     p.add_argument("--count", type=int, default=8)
     p.add_argument("--interval", type=float, default=0.2)
     p.add_argument("--timeout", type=float, default=0.5)
-    a=p.parse_args()
-    if not 1 <= a.count <= 200 or not 0 <= a.interval <= 10 or not 0.05 <= a.timeout <= 10:
+    p.add_argument("--stream", action="store_true", help="finite streaming; stop through stdin")
+    p.add_argument("--duration", type=float, default=180.0)
+    args = p.parse_args()
+    if not 1 <= args.count <= 200 or not 0 <= args.interval <= 10 or not 0.05 <= args.timeout <= 10:
         p.error("probe limits exceeded")
-    for i in range(a.count):
-        result=one(a.host,a.port,a.timeout)
-        result.update({"seq":i,"observed_at_utc":dt.datetime.now(dt.timezone.utc).isoformat(),
-                       "observed_monotonic_ns":time.monotonic_ns()})
-        print(json.dumps(result,sort_keys=True),flush=True)
-        if i+1<a.count: time.sleep(a.interval)
+    if not 0.5 <= args.duration <= 180:
+        p.error("stream duration must be 0.5..180 seconds")
+    deadline = time.monotonic() + args.duration
+    limit = 2000 if args.stream else args.count
+    for i in range(limit):
+        if args.stream:
+            if time.monotonic() >= deadline:
+                break
+            ready, _, _ = select.select([sys.stdin], [], [], 0)
+            if ready:
+                command = sys.stdin.readline()
+                if not command or command.strip().lower() == "stop":
+                    break
+        result = one(args.host, args.port, args.timeout)
+        result.update({"seq": i, "observed_at_utc": dt.datetime.now(dt.timezone.utc).isoformat(),
+                       "observed_monotonic_ns": time.monotonic_ns()})
+        print(json.dumps(result, sort_keys=True), flush=True)
+        if i + 1 < limit and args.interval:
+            time.sleep(args.interval)
 
-if __name__=="__main__":main()
+
+if __name__ == "__main__":
+    main()
