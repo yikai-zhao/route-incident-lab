@@ -24,10 +24,34 @@ See [local lab instructions](labs/three-router/README.md). The current execution
 
 The controller can change only locally labeled test containers and requires `--allow-faults`. Normal device collection is separate and read-only.
 
+## New functionality (2026-11-02)
+
+- **Multi-vendor structured parsing:** Junos, IOS and EOS BGP peer, IPv4 route and interface text adapters, with synthetic format regression tests. Unrecognized OS-version layouts remain inconclusive. Real vendor hardware has not been tested.
+- **Live-lab safety/preflight:** read-only smoke test checks expected BGP sessions, captured router state and actual HTTP responses before fault injection. Fault actions require explicit opt-in and testbed container labels.
+- **Continuous application evidence:** finite HTTP response sampling inside h1 during a local fault, with client monotonic timestamps and bounded observed interruption estimates. This is not exact BGP convergence, passive loss measurement or one-way latency.
+- **Corrected offline fixtures:** backup routing changes now match r1/r3 interface wiring, and the blackhole fixture models an unreachable RPDB rule. Fixtures are synthetic and not proof of live outcomes.
+
+### Run validations on a local Linux Docker host
+
+~~~bash
+python3 -m unittest discover -s tests -v
+containerlab validate -t labs/three-router/topology.clab.yml
+cd labs/three-router
+docker build -t routeincident-endpoint:local -f Dockerfile.endpoint .
+sudo containerlab deploy -t topology.clab.yml
+cd ../..
+PYTHONPATH=src python3 scripts/lab_smoke.py
+PYTHONPATH=src python3 scripts/lab_run.py --scenario neighbor_outage --allow-faults
+PYTHONPATH=src python3 scripts/lab_run.py --scenario backup_failover --allow-faults
+PYTHONPATH=src python3 scripts/lab_run.py --scenario route_ok_blackhole --allow-faults
+~~~
+
+The real topology and its fault controller have **not yet been executed end-to-end** in this environment; inspect generated reports and test results instead of assuming successful runs.
+
 ## What is implemented
 
 - Read-only Linux IPv4 routes, interfaces, ARP neighbors, policy routing rules (RPDB), and FRR route/BGP state collection via fixed commands.
-- SSH key-based capture (strict host-key checking) and Docker-local collection; Junos/IOS/EOS raw CLI adapters have no structured vendor parsers yet.
+- SSH key-based capture (strict host-key checking) and Docker-local collection; Junos/IOS/EOS have conservative structured BGP, route and interface text parsers; unfamiliar formats remain inconclusive, and no hardware validation is claimed.
 - Snapshot diffs for Linux routes, interfaces, ARP, BGP peers, and policy rules. A watched exact prefix in FRR selected RIB but missing from Linux main-table routes is flagged as **possible** RIB/FIB disagreement, not proof of a forwarding fault.
 - An explicit three-phase report: state before fault, first observed settled fault state, and observed recovered state, with action records, capture windows, HTTP probe results and test assertions.
 - A cross-plane warning if both selected RIB and a main-table route remain present while end-to-end HTTP fails. The report calls it an **observation, not a root-cause claim**.
@@ -59,10 +83,10 @@ This times client-side **TCP connection completion**, not one-way latency, excha
 
 ## Limits and evidence status
 
-- Three offline scenario fixtures and unit tests are verified here; live FRR failover and route-policy scenarios still need first execution on a local Linux machine.
+- Three synthetic fixtures and regression tests exist; this revised public commit requires a fresh test run. Live FRR failover and route-policy scenarios still need first execution on a compatible Linux host.
 - State capture runs commands sequentially; a change between commands may produce a mixed snapshot. The report preserves capture windows and does not fabricate exact convergence times.
 - BGP + Linux main-table route presence does not prove end-to-end delivery. Kernel RPDB, VRF, ACL, next-hop reachability, process health, and traffic path may matter.
-- HTTP connect and response probes are *sampled delivery*, not passive packet-loss monitors.
+- HTTP connect and response probes are *sampled delivery*, not passive packet-loss monitors. The continuous sampler produces sample-window bounds, not exact recovery or convergence times.
 - The fault controller is restricted to its local Containerlab topology. Never use it on a production router or company testbed.
 
 There are no GitHub Actions workflows, hosted services, paid APIs, cron jobs, or background tasks in this project. Everything runs locally only when explicitly started. Public Docker images download to your computer and occupy local disk/network bandwidth, but require no cloud infrastructure charges.
