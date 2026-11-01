@@ -1,11 +1,9 @@
-# Next tests to run
+# Outstanding validation milestones
 
-These are still open. The network topology and controller scripts exist, but the Docker/FRR lab has not been executed in this environment.
+1. Fresh-clone Python unit tests: record actual pass count; do not repeat the earlier 26-passed claim for the revised suite without running it.
+2. Containerlab validate + deploy + read-only smoke: show all six expected eBGP peer views Established and actual h1-to-h2 HTTP responses.
+3. Run the three local fault scenarios explicitly with --allow-faults; save route/BGP snapshots, action records, and continuous HTTP traces; repeat each scenario at least three times.
+4. Review timing precision: probe sample windows are bounds, not true route convergence timestamps or packet-loss measurements. Record sampler overhead and verify failure detection without false-positive assertions.
+5. Validate version-specific Junos/IOS/EOS CLI text parsers against authorized real device output before advertising hardware-tested multi-vendor support.
 
-1. **Deploy the local Containerlab topology.** Verify FRR BGP neighbor sessions and r1's route to `10.10.2.0/24`. Confirm h1 receives an actual HTTP response from h2 before injecting faults.
-2. **Run and repeat all three scenarios.** `neighbor_outage` should withdraw routes and stop HTTP; `backup_failover` should change next hop to r3 and recover the direct path; `route_ok_blackhole` should leave RIB and main FIB intact while an RPDB rule blocks delivery. Collect at least three runs per scenario before making reliability claims.
-3. **Inspect failures, not only passed assertions.** Inspect live `vtysh`, `ip -j route`, `ip -j rule`, and TCP/HTTP probe output. Determine whether any false positives arise from sequential snapshot timing, FRR JSON differences, or the probe server itself.
-4. **Only then measure recovery.** Add a bounded continuous time-series sampler, record the fault-command completion timestamp and the collector observation window, and report intervals or uncertainty rather than exact network event timing. Measure sample rates and overhead.
-5. **Consider other vendors later.** Introduce explicit, versioned parsers only when test fixtures and permitted real outputs are available. Raw CLI capture is not the same as structured diagnosis.
-
-Do not commit Ciena configurations, logs, credentials, or proprietary source. No cloud spending, scheduled GitHub Actions or hosted test jobs are required.
+No Ciena/private employer data, paid cloud resources, scheduled GitHub Actions, or external traffic targets.
