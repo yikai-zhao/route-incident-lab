@@ -124,7 +124,7 @@ def analyze_three_phases(before: dict, fault: dict, recovered: dict,
             and s.get("lab_attestation", {}).get("preflight_passed") is True
             and s.get("lab_attestation", {}).get("lab") == "routeincident"
             for s in (before, fault, recovered)
-        ) else "synthetic_or_unverified"),
+        ) else ("unverified_actions" if action_records else "synthetic_fixture")),
         "capture_windows": [
             {"phase": phase, "started_utc": s.get("capture_started_utc", s.get("timestamp")),
              "finished_utc": s.get("capture_finished_utc", s.get("timestamp"))}
