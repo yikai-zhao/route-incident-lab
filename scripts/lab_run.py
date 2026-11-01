@@ -49,6 +49,34 @@ def preflight() -> None:
         raise RuntimeError("h2 expected test address missing; refusing faults")
 
 
+def check_lab_health() -> dict:
+    """Read-only preflight: require both primary and alternate BGP paths ready."""
+    expected = {
+        "r1": ("10.0.12.2", "10.0.13.2"),
+        "r2": ("10.0.12.1", "10.0.23.2"),
+        "r3": ("10.0.13.1", "10.0.23.1"),
+    }
+    result = {}
+    for node, addresses in expected.items():
+        response = json.loads(docker(node, "vtysh", "-c",
+                                     "show bgp ipv4 unicast summary json"))
+        peers = response.get("peers", {})
+        if not peers:
+            for value in response.values():
+                if isinstance(value, dict) and isinstance(value.get("peers"), dict):
+                    peers = value["peers"]
+                    break
+        states = {}
+        for address in addresses:
+            info = peers.get(address, {})
+            state = info.get("state") or info.get("bgpState")
+            states[address] = state
+            if state != "Established":
+                raise RuntimeError(f"{node} eBGP {address} not Established: {state!r}")
+        result[node] = states
+    return result
+
+
 def capture_state(config: dict, phase: str, output: Path) -> dict:
     snap = capture(config)
     snap["phase"] = phase
@@ -163,6 +191,8 @@ def main(argv: list[str] | None = None) -> int:
         out.mkdir(parents=True, exist_ok=True)
         actions: list[dict] = []
         initial_wait()
+        healthy_bgp = check_lab_health()
+        write_json(str(out / "bgp-preflight.json"), healthy_bgp)
         before = capture_state(config, "before", out)
         for dev in before["devices"]:
             for required in ("control_routes", "kernel_routes", "bgp_peers", "policy_rules"):
