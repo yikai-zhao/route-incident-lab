@@ -1,0 +1,15 @@
+__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+build/
+dist/
+.coverage
+.pytest_cache/
+lab-output/
+reports/
+*.log
+*.swp
+clab-*/
+*.clab.log
+.tmp-*.json

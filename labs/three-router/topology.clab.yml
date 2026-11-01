@@ -1,0 +1,44 @@
+# All network modifications are confined to this explicitly deployed local lab.
+name: routeincident
+
+topology:
+  defaults:
+    labels:
+      routeincident.testbed: "true"
+  nodes:
+    r1:
+      kind: frr
+      image: quay.io/frrouting/frr:containerlab-10.7.1
+      startup-config: configs/r1.conf
+      daemons: [bgpd]
+    r2:
+      kind: frr
+      image: quay.io/frrouting/frr:containerlab-10.7.1
+      startup-config: configs/r2.conf
+      daemons: [bgpd]
+    r3:
+      kind: frr
+      image: quay.io/frrouting/frr:containerlab-10.7.1
+      startup-config: configs/r3.conf
+      daemons: [bgpd]
+    h1:
+      kind: linux
+      image: routeincident-endpoint:local
+      cmd: sleep infinity
+      exec:
+        - ip addr add 10.10.1.2/24 dev eth1
+        - ip route replace default via 10.10.1.1
+    h2:
+      kind: linux
+      image: routeincident-endpoint:local
+      cmd: sleep infinity
+      exec:
+        - ip addr add 10.10.2.2/24 dev eth1
+        - ip route replace default via 10.10.2.1
+        - sh -c 'python3 -m http.server 8080 --bind 10.10.2.2 >/tmp/http.log 2>&1 &'
+  links:
+    - endpoints: ["r1:eth1", "r2:eth1"]
+    - endpoints: ["r1:eth2", "r3:eth1"]
+    - endpoints: ["r2:eth2", "r3:eth2"]
+    - endpoints: ["r1:eth3", "h1:eth1"]
+    - endpoints: ["r2:eth3", "h2:eth1"]

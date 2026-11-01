@@ -1,0 +1,32 @@
+{
+  "devices": [
+    {
+      "name": "r1",
+      "profile": "frr_bgp",
+      "transport": "docker",
+      "container": "clab-routeincident-r1",
+      "watch_prefixes": [
+        "10.10.2.0/24"
+      ]
+    },
+    {
+      "name": "r2",
+      "profile": "frr_bgp",
+      "transport": "docker",
+      "container": "clab-routeincident-r2",
+      "watch_prefixes": [
+        "10.10.2.0/24"
+      ]
+    },
+    {
+      "name": "r3",
+      "profile": "frr_bgp",
+      "transport": "docker",
+      "container": "clab-routeincident-r3",
+      "watch_prefixes": [
+        "10.10.2.0/24"
+      ]
+    }
+  ],
+  "probes": []
+}

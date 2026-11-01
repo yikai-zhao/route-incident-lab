@@ -1,0 +1,206 @@
+{
+  "before": {
+    "schema_version": 1,
+    "timestamp": "2026-11-01T12:00:00+00:00",
+    "phase": "before",
+    "devices": [
+      {
+        "name": "r1",
+        "profile": "frr",
+        "watch_prefixes": [
+          "10.10.2.0/24"
+        ],
+        "commands": {
+          "kernel_routes": {
+            "ok": true,
+            "exit_code": 0,
+            "stdout": "[{\"dst\":\"10.10.2.0/24\",\"gateway\":\"10.0.12.2\",\"dev\":\"eth1\",\"protocol\":\"bgp\"}]",
+            "stderr": "",
+            "duration_ms": 0.1
+          },
+          "control_routes": {
+            "ok": true,
+            "exit_code": 0,
+            "stdout": "{\"10.10.2.0/24\":[{\"selected\":true,\"protocol\":\"bgp\",\"installed\":true,\"nexthops\":[{\"ip\":\"10.0.12.2\"}]}]}",
+            "stderr": "",
+            "duration_ms": 0.1
+          },
+          "policy_rules": {
+            "ok": true,
+            "exit_code": 0,
+            "stdout": "[{\"priority\":32766,\"table\":\"main\"}]",
+            "stderr": "",
+            "duration_ms": 0.1
+          },
+          "bgp_peers": {
+            "ok": true,
+            "exit_code": 0,
+            "stdout": "{\"ipv4Unicast\":{\"peers\":{\"10.0.12.2\":{\"state\":\"Established\"}}}}",
+            "stderr": "",
+            "duration_ms": 0.1
+          },
+          "interfaces": {
+            "ok": true,
+            "exit_code": 0,
+            "stdout": "[{\"ifname\":\"eth1\",\"operstate\":\"UP\",\"flags\":[\"UP\"]}]",
+            "stderr": "",
+            "duration_ms": 0.1
+          },
+          "arp_neighbors": {
+            "ok": true,
+            "exit_code": 0,
+            "stdout": "[{\"dev\":\"eth1\",\"dst\":\"10.0.12.2\",\"state\":\"REACHABLE\"}]",
+            "stderr": "",
+            "duration_ms": 0.1
+          }
+        }
+      }
+    ],
+    "probes": [
+      {
+        "name": "h1-to-h2-http",
+        "attempts": 5,
+        "failures": 0,
+        "successes": 5,
+        "connect_failure_pct": 0,
+        "p95_ms": 1.5
+      }
+    ]
+  },
+  "fault": {
+    "schema_version": 1,
+    "timestamp": "2026-11-01T12:01:00+00:00",
+    "phase": "fault",
+    "devices": [
+      {
+        "name": "r1",
+        "profile": "frr",
+        "watch_prefixes": [
+          "10.10.2.0/24"
+        ],
+        "commands": {
+          "kernel_routes": {
+            "ok": true,
+            "exit_code": 0,
+            "stdout": "[{\"dst\":\"10.10.2.0/24\",\"gateway\":\"10.0.12.2\",\"dev\":\"eth1\",\"protocol\":\"bgp\"}]",
+            "stderr": "",
+            "duration_ms": 0.1
+          },
+          "control_routes": {
+            "ok": true,
+            "exit_code": 0,
+            "stdout": "{\"10.10.2.0/24\":[{\"selected\":true,\"protocol\":\"bgp\",\"installed\":true,\"nexthops\":[{\"ip\":\"10.0.12.2\"}]}]}",
+            "stderr": "",
+            "duration_ms": 0.1
+          },
+          "policy_rules": {
+            "ok": true,
+            "exit_code": 0,
+            "stdout": "[{\"priority\":100,\"table\":100,\"fwmark\":\"0x1\"},{\"priority\":32766,\"table\":\"main\"}]",
+            "stderr": "",
+            "duration_ms": 0.1
+          },
+          "bgp_peers": {
+            "ok": true,
+            "exit_code": 0,
+            "stdout": "{\"ipv4Unicast\":{\"peers\":{\"10.0.12.2\":{\"state\":\"Established\"}}}}",
+            "stderr": "",
+            "duration_ms": 0.1
+          },
+          "interfaces": {
+            "ok": true,
+            "exit_code": 0,
+            "stdout": "[{\"ifname\":\"eth1\",\"operstate\":\"UP\",\"flags\":[\"UP\"]}]",
+            "stderr": "",
+            "duration_ms": 0.1
+          },
+          "arp_neighbors": {
+            "ok": true,
+            "exit_code": 0,
+            "stdout": "[{\"dev\":\"eth1\",\"dst\":\"10.0.12.2\",\"state\":\"REACHABLE\"}]",
+            "stderr": "",
+            "duration_ms": 0.1
+          }
+        }
+      }
+    ],
+    "probes": [
+      {
+        "name": "h1-to-h2-http",
+        "attempts": 5,
+        "failures": 5,
+        "successes": 0,
+        "connect_failure_pct": 100,
+        "p95_ms": null
+      }
+    ]
+  },
+  "recovered": {
+    "schema_version": 1,
+    "timestamp": "2026-11-01T12:02:00+00:00",
+    "phase": "recovered",
+    "devices": [
+      {
+        "name": "r1",
+        "profile": "frr",
+        "watch_prefixes": [
+          "10.10.2.0/24"
+        ],
+        "commands": {
+          "kernel_routes": {
+            "ok": true,
+            "exit_code": 0,
+            "stdout": "[{\"dst\":\"10.10.2.0/24\",\"gateway\":\"10.0.12.2\",\"dev\":\"eth1\",\"protocol\":\"bgp\"}]",
+            "stderr": "",
+            "duration_ms": 0.1
+          },
+          "control_routes": {
+            "ok": true,
+            "exit_code": 0,
+            "stdout": "{\"10.10.2.0/24\":[{\"selected\":true,\"protocol\":\"bgp\",\"installed\":true,\"nexthops\":[{\"ip\":\"10.0.12.2\"}]}]}",
+            "stderr": "",
+            "duration_ms": 0.1
+          },
+          "policy_rules": {
+            "ok": true,
+            "exit_code": 0,
+            "stdout": "[{\"priority\":32766,\"table\":\"main\"}]",
+            "stderr": "",
+            "duration_ms": 0.1
+          },
+          "bgp_peers": {
+            "ok": true,
+            "exit_code": 0,
+            "stdout": "{\"ipv4Unicast\":{\"peers\":{\"10.0.12.2\":{\"state\":\"Established\"}}}}",
+            "stderr": "",
+            "duration_ms": 0.1
+          },
+          "interfaces": {
+            "ok": true,
+            "exit_code": 0,
+            "stdout": "[{\"ifname\":\"eth1\",\"operstate\":\"UP\",\"flags\":[\"UP\"]}]",
+            "stderr": "",
+            "duration_ms": 0.1
+          },
+          "arp_neighbors": {
+            "ok": true,
+            "exit_code": 0,
+            "stdout": "[{\"dev\":\"eth1\",\"dst\":\"10.0.12.2\",\"state\":\"REACHABLE\"}]",
+            "stderr": "",
+            "duration_ms": 0.1
+          }
+        }
+      }
+    ],
+    "probes": [
+      {
+        "name": "h1-to-h2-http",
+        "attempts": 5,
+        "failures": 0,
+        "successes": 5,
+        "connect_failure_pct": 0,
+        "p95_ms": 1.5
+      }
+    ]
+  }
+}

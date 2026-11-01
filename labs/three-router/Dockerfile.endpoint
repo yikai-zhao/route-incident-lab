@@ -1,0 +1,4 @@
+# Local image, no registry push or cloud resources.
+FROM python:3.12-alpine
+RUN apk add --no-cache iproute2
+COPY tcp_http_probe.py /opt/routeincident/tcp_http_probe.py
