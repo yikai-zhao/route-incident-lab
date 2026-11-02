@@ -9,7 +9,7 @@ TOPO="$ROOT/labs/three-router/topology.clab.yml"
 mkdir -p "$OUT"
 exec > >(tee "$OUT/run.log") 2>&1
 
-fail() { echo "ERROR: $*" >&2; exit 2; }
+fail() { echo "ERROR: $*" >&2; diagnose; exit 2; }
 diagnose() {
   echo "Preflight failed; logs in $OUT. No faults were injected."
   if command -v docker >/dev/null 2>&1 && docker info >/dev/null 2>&1; then
