@@ -68,6 +68,19 @@ class EpollSamplerTests(unittest.TestCase):
         self.assertIsNone(summary['p50_ms'])
         self.assertIsNone(summary['p99_ms'])
 
+    def test_backlog_pressure_caps_real_inflight_sockets(self):
+        # A listening socket that never accepts creates actual overlapping EINPROGRESS sockets.
+        with socket.socket() as server:
+            server.bind(('127.0.0.1', 0))
+            server.listen(1)
+            result = self.invoke(server.getsockname()[1], 30, 8, 0, 150)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        summary = json.loads(result.stdout)
+        self.assertEqual(summary['attempts'], 30)
+        self.assertEqual(summary['successes'] + summary['failures'], 30)
+        self.assertGreater(summary['peak_inflight'], 1)
+        self.assertLessEqual(summary['peak_inflight'], 8)
+
     def test_invalid_bounds_rejected_before_network(self):
         for args in ((0, 1, 1), (8080, 0, 1), (8080, 1, 0), (8080, 10001, 1),
                      (8080, 1, 257)):
