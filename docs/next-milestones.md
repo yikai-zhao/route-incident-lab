@@ -9,3 +9,6 @@
 No Ciena/private employer data, paid cloud resources, scheduled GitHub Actions, or external traffic targets.
 
 6. Review the new run audit's PASS/FAIL, `incident.md`, and hashed input artifacts; archive actual local run outputs for all three scenarios. Do not present mocked audit tests or loopback-only HTTP observations as live FRR measurements.
+
+7. Bridge the Linux epoll connect-observation timeline with real FRR route events; do not confuse localhost server-stop observations with control-plane convergence.
+8. Perform controlled poll/epoll CPU and latency distributions under comparable loads with profiler data before claiming any performance advantage.
