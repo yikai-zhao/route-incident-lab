@@ -93,6 +93,22 @@ Docker/cloud/hosted CI:
 This creates lab-output/full-local-verification with local build/test logs
 and real loopback evidence. It is a script, not a scheduled background job.
 
+## Repeatable local network stress observations
+
+The optional Linux stress harness repeats **real TCP Socket connect tests**
+under two different workload shapes and saves individual samples, errno
+distributions, successful-connect p99, CPU time and available kernel
+TcpExt listen queue counters:
+
+    python3 scripts/local_stress_observe.py
+
+An early heavy burst observed 64 connect timeouts in 2000 attempts; other
+repetitions did not. The difference is why failures and raw samples matter.
+**Burst and paced trials are not equivalent offered loads**; these numbers
+are not a claim of low-latency optimization or trading-system performance.
+
+[Read the stress-test methodology and caveats](docs/PERFORMANCE_MEASUREMENT.md)
+
 ## Real local lab (requires Docker + Containerlab)
 
 `labs/three-router/` has a three-FRR-router topology, two Linux hosts, a simple HTTP target, and an explicitly opt-in local fault controller. The topology is based on Containerlab's native `frr` kind and FRRouting configuration, **not** any private employer setup.
