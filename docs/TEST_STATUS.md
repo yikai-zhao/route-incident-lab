@@ -81,3 +81,16 @@ There are no scheduled jobs, paid services or GitHub Actions workflows.
   that all other existing repository tests passed from a clean clone.
 - Full local verification script added; it was not run over a fresh complete
   GitHub checkout in this environment. No hosted GitHub Actions or cloud use.
+
+## 2026-11-08 repeated Socket load observations
+
+- Added local-only six-trial real Socket stress harness with per-attempt
+  raw JSONL, successful-only p99, errno distribution, sampler CPU time,
+  wall time and Linux TcpExt listen queue counter deltas when available.
+- Actually ran six new 2000-connect trials (three burst and three paced);
+  most completed with no failures. Other preliminary burst runs
+  had 36 or 64 ETIMEDOUT connect attempts, showing variability.
+- No fair performance superiority claim is supported because the two
+  workload types have different offered loads and scheduling.
+- Local stress harness is not part of the regular 23-unit-test count.
+  No full clean-clone regression claim or live FRR test claim is made.
