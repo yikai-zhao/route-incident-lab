@@ -21,3 +21,8 @@ No Ciena/private employer data, paid cloud resources, scheduled GitHub Actions, 
     real-socket fixtures and explicit timing/measurement boundaries.
 11. Benchmark poll/epoll with matched workloads and resource counters before
     claiming lower tail latency; archive machine/CPU/compiler metadata.
+
+12. UDP multicast receiver burst stress and socket overflow evidence under
+    repeatable load. Separate publisher gaps from actual queue drops.
+13. Compare recvmmsg with one-datagram recvmsg under the same workload.
+    Record CPU profiles, repetitions, kernel configuration and p99 variability.

@@ -87,3 +87,13 @@ still need a fresh complete verification run.
 
 No GitHub Actions workflows, paid services, proprietary employer captures,
 or scheduled network jobs are required.
+
+
+## Subsequent extension: sequenced multicast UDP feed monitoring
+
+Route Incident Lab also includes a bounded C++17 epoll + recvmmsg receiver
+for a documented synthetic multicast protocol. This broadens evidence from
+TCP connect completion and kernel IPv4 route notifications to UDP feed
+delivery and per-stream binary sequence tracking. See MULTICAST_FEED.md
+for actual loopback validation and limits. It is not a production exchange
+feed, kernel bypass implementation or packet loss measurement.
