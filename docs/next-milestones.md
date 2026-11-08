@@ -12,3 +12,12 @@ No Ciena/private employer data, paid cloud resources, scheduled GitHub Actions, 
 
 7. Bridge the Linux epoll connect-observation timeline with real FRR route events; do not confuse localhost server-stop observations with control-plane convergence.
 8. Perform controlled poll/epoll CPU and latency distributions under comparable loads with profiler data before claiming any performance advantage.
+
+9. Validate real route change notifications in an isolated, explicitly
+   authorized local netns/Containerlab run; zero notifications in a localhost
+   server test is expected and must not be claimed as routing verification.
+10. Add local UDP multicast sequenced-feed diagnostics: distinguish
+    publisher gaps, packet loss, reordering and duplication; verify with
+    real-socket fixtures and explicit timing/measurement boundaries.
+11. Benchmark poll/epoll with matched workloads and resource counters before
+    claiming lower tail latency; archive machine/CPU/compiler metadata.
