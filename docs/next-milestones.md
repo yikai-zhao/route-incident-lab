@@ -26,3 +26,7 @@ No Ciena/private employer data, paid cloud resources, scheduled GitHub Actions, 
     repeatable load. Separate publisher gaps from actual queue drops.
 13. Compare recvmmsg with one-datagram recvmsg under the same workload.
     Record CPU profiles, repetitions, kernel configuration and p99 variability.
+
+14. Randomized matched-workload poll versus epoll trials with warmup,
+    CPU pinning, performance counters where authorized, explicit failure
+    distributions, and archived machine/compiler metadata.
