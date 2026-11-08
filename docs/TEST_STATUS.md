@@ -163,3 +163,12 @@ suite are still pending.
 - Five targeted regression tests: valid, tampered, missing, forged accounting and negative timestamps.
 - Existing real Linux four-trial evidence was independently audited locally and passed (64 healthy; 131/131/130 application drops).
 - This verifies consistency, not original sender authenticity. No Actions or paid services.
+
+## 2026-11-08 paired UDP performance and CPU trade-off milestone
+
+- Native C++17 udp_pipeline: same parser, socket, epoll loop and SPSC queue support recvmsg/recvmmsg, JSONL/metrics-only, and 100-us-sleep/spin consumer modes; legacy positional CLI still works.
+- Real Linux localhost UDP: 5 randomized paired measured rounds plus 1 warmup, 4 modes, 3000 sent/received/processed frames per mode/trial; 20/20 measured trial accounting checks PASS.
+- Linux CPU affinity receiver on CPUs 0/1 and sender on CPU 2; cgroup quota 4 CPUs. Raw trial summaries, 5 JSONL files and SHA256 available in a separately retained local evidence archive. Script regenerates evidence without remote services.
+- Median queue p99 366.765 us sleep vs 73.5075 us spin; active-process CPU 12.2366 vs 114.083 us/frame. Spin improves observed p99 on all 5 pairs but costs ~9.3x active CPU. Not NIC or market-data wire latency.
+- Targeted normal real-socket tests: original UDP 7/7, new performance-mode 6/6, local benchmark 2/2. Ring test still checks 200000 ordered transfers even in Release -DNDEBUG. ThreadSanitizer ring PASS, ASan/UBSan UDP tests PASS.
+- Full checkout original repo suite, live FRR/Containerlab BGP experiment, and physical NIC/perf validation remain outstanding. No Actions or paid infrastructure.

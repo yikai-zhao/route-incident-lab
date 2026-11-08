@@ -1,5 +1,14 @@
 # Route Incident Lab
 
+## Quant systems evidence — same-codepath UDP latency/CPU trade-off (2026-11-08)
+
+- **C++17/Linux datapath:** nonblocking UDP sockets, epoll, scalar recvmsg versus 16-way recvmmsg, preallocated bounded lock-free SPSC, timestamped sequence classification.
+- **Controlled local experiment:** 5 randomized paired runs per mode on pinned Linux CPUs, 3,000 real loopback datagrams per trial, all 20 measured trials complete and with no application drops.
+- **Measured trade-off:** busy-spin consumer reduced the median queue-residence p99 from **366.8 to 73.5 us** versus 100-us sleeping consumer (**~80%** on this host) while raising active process CPU per frame from **12.2 to 114.1 us (~9.3x)**. Explicit startup CPU is tracked separately.
+- **Honest limits:** not wire-to-wire latency, NIC/hardware timestamping, exchange-feed or benchmarked saturation throughput. Actual dynamic BGP/FRR end-to-end validation remains outstanding.
+
+[Reproduce, inspect controls, and understand limitations](docs/LOW_LATENCY_RECEIVE_BENCHMARK.md). No hosted CI, paid service or external traffic.
+
 I worked on routing software, CLI diagnostics, and regression tests during my co-op. A show command can tell you that a route exists, but not whether application traffic actually reaches its destination. I built this small lab to make those questions easier to test together.
 
 The goal is to record **what changed**, **what traffic did**, and **what can actually be concluded**. No AI diagnosis, network dashboards, cloud services, or automatic production router configuration.

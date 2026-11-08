@@ -5,6 +5,8 @@
 #include <arpa/inet.h>
 #include <sys/epoll.h>
 #include <sys/socket.h>
+#include <sys/resource.h>
+#include <time.h>
 #include <unistd.h>
 #include <atomic>
 #include <cerrno>
@@ -46,6 +48,11 @@ uint32_t get_u32(const unsigned char* ptr) {
 uint64_t get_u64(const unsigned char* ptr) {
   return (static_cast<uint64_t>(get_u32(ptr)) << 32) | get_u32(ptr + 4);
 }
+long long cpu_ns(clockid_t clock) {
+  timespec ts{};
+  if (::clock_gettime(clock, &ts) < 0) throw std::runtime_error("clock_gettime failed");
+  return static_cast<long long>(ts.tv_sec)*1000000000LL+ts.tv_nsec;
+}
 long long monotonic_ns() {
   return std::chrono::duration_cast<std::chrono::nanoseconds>(Clock::now().time_since_epoch()).count();
 }
@@ -79,17 +86,31 @@ struct ConsumerStats {
 };
 
 int run(int argc, char** argv) {
-  if (argc != 8) throw std::invalid_argument(
-    "usage: udp_pipeline GROUP_OR_DASH PORT DATAGRAM_COUNT TIMEOUT_MS CAPACITY CONSUMER_DELAY_US OUTPUT.jsonl");
+  if (argc < 8 || argc > 11) throw std::invalid_argument(
+    "usage: udp_pipeline GROUP_OR_DASH PORT DATAGRAM_COUNT TIMEOUT_MS CAPACITY CONSUMER_DELAY_US OUTPUT.jsonl [--rx=batch|scalar] [--sink=jsonl|none] [--idle=sleep|spin]");
+  bool batch=true, write_jsonl=true, spin_wait=false;
+  for (int i=8;i<argc;++i) {
+    const std::string flag=argv[i];
+    if(flag=="--rx=batch") batch=true;
+    else if(flag=="--rx=scalar") batch=false;
+    else if(flag=="--sink=jsonl") write_jsonl=true;
+    else if(flag=="--sink=none") write_jsonl=false;
+    else if(flag=="--idle=sleep") spin_wait=false;
+    else if(flag=="--idle=spin") spin_wait=true;
+    else throw std::invalid_argument("unknown receive/sink option: "+flag);
+  }
   const std::string group=argv[1];
   const int port=static_cast<int>(parse(argv[2],1,65535));
-  const size_t target=static_cast<size_t>(parse(argv[3],1,20000));
+  const size_t target=static_cast<size_t>(parse(argv[3],1,200000));
   const int timeout_ms=static_cast<int>(parse(argv[4],100,60000));
   const size_t capacity=static_cast<size_t>(parse(argv[5],2,65536));
   const int consumer_delay_us=static_cast<int>(parse(argv[6],0,100000));
   SpscRing<Packet> queue(capacity);
-  std::ofstream output(argv[7],std::ios::trunc);
-  if (!output) throw std::runtime_error("cannot open output");
+  std::ofstream output;
+  if (write_jsonl) {
+    output.open(argv[7],std::ios::trunc);
+    if (!output) throw std::runtime_error("cannot open output");
+  }
   Fd socket_fd(::socket(AF_INET,SOCK_DGRAM|SOCK_NONBLOCK|SOCK_CLOEXEC,0));
   if (socket_fd.fd<0) throw std::runtime_error("UDP socket failed");
   int yes=1;
@@ -120,11 +141,16 @@ int run(int argc, char** argv) {
   std::atomic<bool> completed{false};
   ConsumerStats consumer;
   std::exception_ptr worker_error;
+  long long worker_cpu_ns=0;
   std::thread worker([&]{
     try {
+      const auto cpu_start=cpu_ns(CLOCK_THREAD_CPUTIME_ID);
       Packet packet{};
       while (!completed.load(std::memory_order_acquire) || queue.size_approx()>0) {
-        if (!queue.try_pop(packet)) { std::this_thread::sleep_for(std::chrono::microseconds(100)); continue; }
+        if (!queue.try_pop(packet)) {
+          if (!spin_wait) std::this_thread::sleep_for(std::chrono::microseconds(100));
+          continue;
+        }
         const auto now=monotonic_ns();
         const double delay=std::max<double>(0,static_cast<double>(now-packet.received_ns)/1000.0);
         consumer.queue_delay_us.push_back(delay);
@@ -143,14 +169,17 @@ int run(int argc, char** argv) {
           else { kind="forward_jump"; ++consumer.forward_gap;
             consumer.missing_candidates+=diff-1; }
         }
-        output<<"{\"stream_id\":"<<packet.stream_id<<",\"seq\":"<<packet.seq
-              <<",\"classification\":\""<<kind<<"\",\"received_monotonic_ns\":"<<packet.received_ns
-              <<",\"processed_monotonic_ns\":"<<now<<",\"queue_delay_us\":"<<std::fixed
-              <<std::setprecision(3)<<delay<<"}\n";
+        if (write_jsonl) {
+          output<<"{\"stream_id\":"<<packet.stream_id<<",\"seq\":"<<packet.seq
+                <<",\"classification\":\""<<kind<<"\",\"received_monotonic_ns\":"<<packet.received_ns
+                <<",\"processed_monotonic_ns\":"<<now<<",\"queue_delay_us\":"<<std::fixed
+                <<std::setprecision(3)<<delay<<"}\n";
+        }
         ++consumer.processed;
-        if (!output) throw std::runtime_error("consumer JSONL write failed");
+        if (write_jsonl && !output) throw std::runtime_error("consumer JSONL write failed");
         if(consumer_delay_us) std::this_thread::sleep_for(std::chrono::microseconds(consumer_delay_us));
       }
+      worker_cpu_ns=cpu_ns(CLOCK_THREAD_CPUTIME_ID)-cpu_start;
     } catch (...) {worker_error=std::current_exception();}
   });
 
@@ -158,7 +187,23 @@ int run(int argc, char** argv) {
   size_t queue_highwater=0;
   uint32_t overflow_cumulative=0;
   bool overflow_reported=false;
+  uint64_t successful_rx_syscalls=0, first_receive_ns=0, last_receive_ns=0;
+  long long first_receive_cpu_ns=0;
+  const auto cpu_start=cpu_ns(CLOCK_PROCESS_CPUTIME_ID);
   const auto deadline=Clock::now()+std::chrono::milliseconds(timeout_ms);
+  constexpr int RX_BATCH_MAX=16;
+  unsigned char data[RX_BATCH_MAX][2048]{};
+  alignas(cmsghdr) unsigned char ancillary[RX_BATCH_MAX][256]{};
+  sockaddr_in peer[RX_BATCH_MAX]{};
+  iovec buffers[RX_BATCH_MAX]{};
+  mmsghdr messages[RX_BATCH_MAX]{};
+  const int slots=batch ? RX_BATCH_MAX : 1;
+  for (int i=0;i<slots;++i) {
+    buffers[i].iov_base=data[i]; buffers[i].iov_len=sizeof(data[i]);
+    messages[i].msg_hdr.msg_iov=&buffers[i]; messages[i].msg_hdr.msg_iovlen=1;
+    messages[i].msg_hdr.msg_name=&peer[i];
+    messages[i].msg_hdr.msg_control=ancillary[i];
+  }
   try {
     while(received<target && Clock::now()<deadline) {
       const auto remaining=std::chrono::duration_cast<std::chrono::milliseconds>(deadline-Clock::now()).count();
@@ -167,27 +212,32 @@ int run(int argc, char** argv) {
       if(n<0) {if(errno==EINTR)continue;throw std::runtime_error("epoll wait failed");}
       if(n==0)break;
       if(!(ready.events&EPOLLIN))throw std::runtime_error("epoll receive not readable");
-      constexpr int BATCH=16;
-      unsigned char data[BATCH][2048]{};
-      alignas(cmsghdr) unsigned char ancillary[BATCH][256]{};
-      sockaddr_in peer[BATCH]{};
-      iovec buffers[BATCH]{};
-      mmsghdr messages[BATCH]{};
-      for(int i=0;i<BATCH;++i) {
-        buffers[i].iov_base=data[i];buffers[i].iov_len=sizeof(data[i]);
-        messages[i].msg_hdr.msg_iov=&buffers[i];messages[i].msg_hdr.msg_iovlen=1;
-        messages[i].msg_hdr.msg_name=&peer[i];messages[i].msg_hdr.msg_namelen=sizeof(peer[i]);
-        messages[i].msg_hdr.msg_control=ancillary[i];messages[i].msg_hdr.msg_controllen=sizeof(ancillary[i]);
+      for(int i=0;i<slots;++i) {
+        messages[i].msg_hdr.msg_namelen=sizeof(peer[i]);
+        messages[i].msg_hdr.msg_controllen=sizeof(ancillary[i]);
+        messages[i].msg_hdr.msg_flags=0;
+        messages[i].msg_len=0;
       }
-      int got=::recvmmsg(socket_fd.fd,messages,BATCH,MSG_DONTWAIT,nullptr);
-      if(got<0){if(errno==EAGAIN||errno==EINTR)continue;throw std::runtime_error("recvmmsg failed");}
-      for(int i=0;i<got;++i){
+      int got=0;
+      if (batch) {
+        got=::recvmmsg(socket_fd.fd,messages,slots,MSG_DONTWAIT,nullptr);
+      } else {
+        const int bytes=::recvmsg(socket_fd.fd,&messages[0].msg_hdr,MSG_DONTWAIT);
+        if(bytes>=0) {messages[0].msg_len=static_cast<unsigned int>(bytes);got=1;}
+        else got=-1;
+      }
+      if(got<0){if(errno==EAGAIN||errno==EINTR)continue;throw std::runtime_error("UDP receive failed");}
+      if(got>0) ++successful_rx_syscalls;
+      for(int i=0;i<got && received<target;++i){
         ++received;
+        const uint64_t received_at=static_cast<uint64_t>(monotonic_ns());
+        if(!first_receive_ns) { first_receive_ns=received_at; first_receive_cpu_ns=cpu_ns(CLOCK_PROCESS_CPUTIME_ID); }
+        last_receive_ns=received_at;
         const auto& msg=messages[i];
         if ((msg.msg_hdr.msg_flags&(MSG_TRUNC|MSG_CTRUNC)) || msg.msg_len != 16 ||
             get_u32(data[i])!=0x52494c31u) {++malformed;continue;}
         ++valid;
-        Packet sample{get_u32(data[i]+4),get_u64(data[i]+8),static_cast<uint64_t>(monotonic_ns())};
+        Packet sample{get_u32(data[i]+4),get_u64(data[i]+8),received_at};
         if(!queue.try_push(sample))++queue_dropped;
         else queue_highwater=std::max(queue_highwater,queue.size_approx());
         for(auto* c=CMSG_FIRSTHDR(const_cast<msghdr*>(&msg.msg_hdr));c;
@@ -202,10 +252,28 @@ int run(int argc, char** argv) {
   completed.store(true,std::memory_order_release);
   worker.join();
   if(worker_error)std::rethrow_exception(worker_error);
-  output.flush();if(!output)throw std::runtime_error("output flush failed");
+  if(write_jsonl) { output.flush();if(!output)throw std::runtime_error("output flush failed"); }
+  const auto total_cpu_ns=cpu_ns(CLOCK_PROCESS_CPUTIME_ID)-cpu_start;
+  const auto startup_cpu_ns=first_receive_cpu_ns ? first_receive_cpu_ns-cpu_start : total_cpu_ns;
+  const auto active_cpu_ns=total_cpu_ns-startup_cpu_ns;
+  rusage usage{};
+  if (::getrusage(RUSAGE_SELF,&usage)<0) throw std::runtime_error("getrusage failed");
   if (valid != consumer.processed+queue_dropped) throw std::runtime_error("inconsistent queue accounting");
   std::sort(consumer.queue_delay_us.begin(),consumer.queue_delay_us.end());
-  std::cout<<"{\"engine\":\"spsc_epoll_recvmmsg\",\"received_datagrams\":"<<received
+  std::cout<<"{\"engine\":\"spsc_epoll_udp\",\"receive_mode\":\""<<(batch?"batch":"scalar")
+           <<"\",\"sink\":\""<<(write_jsonl?"jsonl":"none")
+           <<"\",\"consumer_idle_strategy\":\""<<(spin_wait?"spin":"sleep100us")
+           <<"\",\"rx_successful_syscalls\":"<<successful_rx_syscalls
+           <<",\"rx_datagrams_per_successful_call\":"<<(successful_rx_syscalls ? static_cast<double>(received)/successful_rx_syscalls : 0.)
+           <<",\"receiver_active_window_ns\":"<<(first_receive_ns ? last_receive_ns-first_receive_ns : 0)
+           <<",\"process_cpu_ns\":"<<total_cpu_ns
+           <<",\"process_cpu_startup_ns\":"<<startup_cpu_ns
+           <<",\"process_cpu_active_ns\":"<<active_cpu_ns
+           <<",\"consumer_thread_cpu_ns\":"<<worker_cpu_ns
+           <<",\"voluntary_context_switches\":"<<usage.ru_nvcsw
+           <<",\"involuntary_context_switches\":"<<usage.ru_nivcsw
+           <<",\"max_rss_kib\":"<<usage.ru_maxrss
+           <<",\"received_datagrams\":"<<received
            <<",\"target\":"<<target<<",\"valid_frames\":"<<valid
            <<",\"malformed_frames\":"<<malformed<<",\"processed\":"<<consumer.processed
            <<",\"application_queue_drops\":"<<queue_dropped

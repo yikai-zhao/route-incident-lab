@@ -51,3 +51,12 @@ PR status. Do not rewrite main history just to make stale refs disappear.
   application drop accounting and repeated controlled consumer
   backpressure. No new remote branch; direct main-tree commit.
   The historical record remains append-only.
+
+## 2026-11-08 — controlled SPSC UDP latency/CPU experiment
+
+- Added same-path recvmsg/recvmmsg, JSONL/metrics sink, spin/sleep consumer and process/thread CPU telemetry with startup separated from active CPU.
+- Added local paired benchmark with random order, CPU affinity, warmup, fail-closed frame and overflow checks, raw summaries and hashes.
+- Measured 20 valid Linux loopback trials; spin lowers observed queue-residence p99 while consuming substantially more CPU; no general HFT performance claim.
+- Hardened native SPSC test against Release NDEBUG removing correctness checks.
+- Added real Socket mode integrations and benchmark control tests, sanitizers, reproducible documentation.
+- No GitHub Actions, hosted compute or external API.

@@ -50,3 +50,6 @@ No Ciena/private employer data, paid cloud resources, scheduled GitHub Actions, 
     evidence-grounded, read-only cross-layer incident debugging assistant
     with local LLM interface, deterministic baseline, evaluation and
     abstention controls. Do not couple an LLM to latency-critical feed path.
+
+20. Completed single-codepath UDP latency/CPU trade-off: five paired pinned loopback rounds, real synthetic datagrams and fail-closed accounting, normal/sanitized targeted tests. Queue p99 improvement has an explicit CPU cost; not a saturation or wire measurement. See docs/LOW_LATENCY_RECEIVE_BENCHMARK.md.
+21. Still outstanding for stronger Quant Systems evidence: clean-clone full regression, repeat on dedicated bare-metal Linux with perf and NIC timestamps, sweep offered load through saturation and record kernel overflow, and live FRR BGP recovery. Do not claim any as completed.
