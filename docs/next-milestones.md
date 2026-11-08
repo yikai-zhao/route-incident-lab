@@ -7,3 +7,5 @@
 5. Validate version-specific Junos/IOS/EOS CLI text parsers against authorized real device output before advertising hardware-tested multi-vendor support.
 
 No Ciena/private employer data, paid cloud resources, scheduled GitHub Actions, or external traffic targets.
+
+6. Review the new run audit's PASS/FAIL, `incident.md`, and hashed input artifacts; archive actual local run outputs for all three scenarios. Do not present mocked audit tests or loopback-only HTTP observations as live FRR measurements.

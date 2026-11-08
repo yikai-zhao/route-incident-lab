@@ -4,28 +4,49 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import json
+import re
 import socket
 import time
 import sys
 import select
 
+_STATUS = re.compile(rb"HTTP/1\.[01] ([0-9]{3})(?:[ \t].*)?$")
+
+
+def _status(sock: socket.socket) -> int:
+    """Read a complete status line; TCP recv() may return only a fragment."""
+    line = bytearray()
+    while b"\r\n" not in line:
+        chunk = sock.recv(512)
+        if not chunk:
+            raise OSError("HTTP response ended before status line")
+        line.extend(chunk)
+        if len(line) > 4096:
+            raise OSError("HTTP status line exceeds 4096 bytes")
+    match = _STATUS.fullmatch(bytes(line).split(b"\r\n", 1)[0])
+    if not match:
+        raise OSError("invalid HTTP status line")
+    return int(match.group(1))
+
 
 def one(host: str, port: int, timeout: float) -> dict:
     t0 = time.monotonic_ns()
+    status = None
     try:
         with socket.create_connection((host, port), timeout=timeout) as sock:
             connected = time.monotonic_ns()
             sock.settimeout(timeout)
             sock.sendall(b"GET / HTTP/1.0\r\nHost: lab\r\nConnection: close\r\n\r\n")
-            line = sock.recv(128).split(b"\r\n", 1)[0]
+            status = _status(sock)
             finished = time.monotonic_ns()
-            if not (line.startswith(b"HTTP/1.0 200") or line.startswith(b"HTTP/1.1 200")):
-                raise OSError(f"unexpected HTTP response: {line[:50]!r}")
+            if status != 200:
+                raise OSError(f"unexpected HTTP status: {status}")
         return {"ok": True, "connect_ms": round((connected-t0)/1e6, 3),
-                "delivery_ms": round((finished-t0)/1e6, 3), "error": None}
+                "delivery_ms": round((finished-t0)/1e6, 3), "http_status": status,
+                "error": None}
     except (OSError, TimeoutError) as exc:
         return {"ok": False, "connect_ms": None, "delivery_ms": None,
-                "error": type(exc).__name__}
+                "http_status": status, "error": type(exc).__name__}
 
 
 def main() -> None:

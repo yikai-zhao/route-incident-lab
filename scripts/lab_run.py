@@ -20,6 +20,7 @@ sys.path.insert(0, str(ROOT / "src"))
 from routeincident.capture import capture, write_json  # noqa: E402
 from routeincident.scenarios import analyze_three_phases  # noqa: E402
 from routeincident.delivery import LocalLabHttpSampler, summarize_delivery  # noqa: E402
+from audit_run import audit, markdown  # noqa: E402
 
 CONTAINERS = {name: f"clab-routeincident-{name}" for name in ("r1", "r2", "r3", "h1", "h2")}
 SCENARIOS = ("neighbor_outage", "backup_failover", "route_ok_blackhole")
@@ -235,12 +236,16 @@ def main(argv: list[str] | None = None) -> int:
             report["assertions"]["continuous_probe_healthy"] = False
             report["assertions_passed"] = False
         write_json(str(out / "report.json"), report)
+        audited = audit(out)
+        write_json(str(out / "audit.json"), audited)
+        (out / "incident.md").write_text(markdown(audited), encoding="utf-8")
         print(f"Wrote: {out / 'report.json'}")
+        print(f"Evidence gate: {audited['verdict']} ({sum(audited['checks'].values())}/{len(audited['checks'])}); {out / 'incident.md'}")
         print(f"Assertions: {sum(report['assertions'].values())}/{len(report['assertions'])}")
         print(f"Continuous HTTP: {report['continuous_delivery']['attempts']} samples; "
               f"{report['continuous_delivery']['failures']} failed HTTP observations; "
               f"observed failure span={report['continuous_delivery']['observed_failure_span_ms']} ms")
-        return 0 if report["assertions_passed"] else 1
+        return 0 if report["assertions_passed"] and audited["verdict"] == "PASS" else 1
     except (RuntimeError, OSError, ValueError, subprocess.TimeoutExpired) as exc:
         print(f"lab validation failed: {exc}", file=sys.stderr)
         return 2

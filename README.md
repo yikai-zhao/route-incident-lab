@@ -81,6 +81,22 @@ python3 -m http.server 8000 &
 
 This times client-side **TCP connection completion**, not one-way latency, exchange feed latency, or actual packet forwarding time. DNS lookup is outside the measured loop. A few samples do not provide statistically meaningful tail latency.
 
+## Evidence audit for a completed local fault run (2026-11-07)
+
+The HTTP response probe now reads a complete TCP-fragmented HTTP status line, accepts **exactly 200** (not 2000/404) and records `http_status`. Its real-socket loopback regression suite checks fragmented, incomplete, oversized, and non-200 replies. A verified **local loopback HTTP** run is not a verified FRR test.
+
+The opt-in local fault runner automatically writes `audit.json` and a readable `incident.md`, in addition to its original phase snapshots and raw continuous sampling. The evidence gate checks all six expected preflight eBGP peer views, three phase captures and HTTP results, local action records, unmodified raw-sample counts and report assertions. Missing or inconsistent evidence produces `FAIL` and a nonzero exit status. You can independently recheck a saved run with:
+
+```bash
+python3 -m unittest discover -s tests -v
+bash scripts/smoke_once.sh                # read-only local 3-router BGP/HTTP, requires WSL2/Linux + Docker + Containerlab
+PYTHONPATH=src python3 scripts/lab_run.py --scenario neighbor_outage --allow-faults
+python3 scripts/audit_run.py --run-dir lab-output/neighbor_outage
+# Repeat with backup_failover and route_ok_blackhole.
+```
+
+The audit only checks consistency of self-reported local files; it is **not independent proof** of execution, forwarding causality, exact convergence time or hardware support. Keep the real generated `lab-output/*/incident.md`, `audit.json`, `report.json` and phase snapshots as evidence rather than inventing results. No GitHub Actions or paid cloud tools are used.
+
 ## Limits and evidence status
 
 - Three synthetic fixtures and regression tests exist; this revised public commit requires a fresh test run. Live FRR failover and route-policy scenarios still need first execution on a compatible Linux host.
