@@ -35,7 +35,7 @@ def audit(folder: Path) -> dict:
             checks['file:' + stem] = False
     report = inputs.get('report', {})
     scenario = report.get('scenario')
-    checks['known_scenario_and_directory'] = scenario in SCENARIOS and folder.name == scenario
+    checks['known_scenario_and_directory'] = isinstance(scenario, str) and scenario in SCENARIOS and folder.name == scenario
     checks['locally_attested_report'] = report.get('evidence_level') == 'local_lab_observation'
     assertions = report.get('assertions')
     checks['scenario_assertions'] = (isinstance(assertions, dict) and bool(assertions)
@@ -52,9 +52,11 @@ def audit(folder: Path) -> dict:
         devices = snap.get('devices')
         checks['capture:' + phase] = (
             snap.get('phase') == phase and snap.get('capture_mode') == 'live_observation'
-            and snap.get('lab_attestation', {}).get('lab') == 'routeincident'
-            and snap.get('lab_attestation', {}).get('preflight_passed') is True
-            and isinstance(devices, list) and {d.get('name') for d in devices} == set(EXPECTED)
+            and isinstance(snap.get('lab_attestation'), dict)
+            and snap['lab_attestation'].get('lab') == 'routeincident'
+            and snap['lab_attestation'].get('preflight_passed') is True
+            and isinstance(devices, list) and all(isinstance(d, dict) for d in devices)
+            and {d.get('name') for d in devices} == set(EXPECTED)
             and all(all(d.get('commands', {}).get(k, {}).get('ok') is True for k in REQUIRED)
                     for d in devices)) if isinstance(devices, list) else False
         probes = snap.get('probes')
@@ -69,7 +71,8 @@ def audit(folder: Path) -> dict:
                  else probe['failures'] > 0)) if probe is not None else False
     actions = report.get('actions')
     checks['recorded_local_actions'] = isinstance(actions, list) and bool(actions) and all(
-        isinstance(a, dict) and a.get('test_container', '').startswith('clab-routeincident-')
+        isinstance(a, dict) and isinstance(a.get('test_container'), str)
+        and a['test_container'].startswith('clab-routeincident-')
         and isinstance(a.get('argv'), list) and bool(a['argv'])
         and a.get('performed_at_utc') and a.get('command_finished_utc')
         for a in actions) if isinstance(actions, list) else False
@@ -83,7 +86,9 @@ def audit(folder: Path) -> dict:
                                      for i in range(len(samples)-1)))
     checks['continuous_http_samples'] = (stream.get('source') == 'live_local_http_probe'
         and stream.get('errors') == [] and ordered)
-    delivery = report.get('continuous_delivery', {})
+    delivery = report.get('continuous_delivery')
+    if not isinstance(delivery, dict):
+        delivery = {}
     checks['continuous_report_matches_raw'] = (ordered and isinstance(delivery, dict)
         and delivery.get('probe_errors') == []
         and delivery.get('attempts') == len(samples)
