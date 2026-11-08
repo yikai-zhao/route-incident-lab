@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Run a real local TCP-listener outage/recovery against the Linux epoll sampler.
 
-Only binds 127.0.0.1; no Docker, privileged operations, external network, or fault injection.
+Only binds 127.0.0.1; no Docker, privileged operations, external network, or router configuration changes.
 This tests client Socket connect observations, NOT BGP or route convergence.
 """
 from __future__ import annotations
