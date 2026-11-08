@@ -94,3 +94,25 @@ There are no scheduled jobs, paid services or GitHub Actions workflows.
   workload types have different offered loads and scheduling.
 - Local stress harness is not part of the regular 23-unit-test count.
   No full clean-clone regression claim or live FRR test claim is made.
+
+## 2026-11-08 core evidence: controlled routing + paired backend
+
+- Implemented and genuinely executed **three isolated dual-link Linux
+  namespace static-route fault runs** (three PASS), total 1080 TCP connects,
+  18 actual RTNETLINK route notifications, nine link notifications. Phases
+  independently show baseline, link-down failure, explicit backup route,
+  injected blackhole and recovery. Separate code and actual network evidence.
+- This is NOT Containerlab/FRR/BGP; those still require a real compatible
+  host to verify. Never call static route replacement dynamic convergence.
+- Implemented one C++17 connect reactor supporting poll and epoll with
+  identical socket setup, issue schedule, deadlines and sampling; randomized
+  paired order on real localhost sockets. Five pairs/workload completed.
+  Accepting workload 2500/2500 successes per backend, no failures. Stalled
+  backlog workload 890/900 failures per backend. Successful-only p99 in the
+  latter is not an improvement metric.
+- Five new real-Socket comparator tests passed. Four namespace safety tests
+  plus one explicitly opt-in actual isolated network integration test passed.
+  Full historical repository suite from a fresh checkout was NOT run.
+- Source Git blob IDs were verified against the exact locally tested code.
+  Raw samples and SHA-256 digest manifest are retained separately.
+- One atomic Git main update, without adding a new remote feature branch.

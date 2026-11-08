@@ -16,6 +16,39 @@ python3 -m unittest discover -s tests -v
 
 Three fixture scenarios: loss of both BGP paths, failover from a direct BGP link to an alternate, and an application blackhole even while the FRR selected route and Linux main-table route remain in place. These are **deliberately synthetic fixtures** that exercise the analyzer, not measurements from a live network.
 
+## Verified Linux routing + matched reactor evidence (2026-11-08)
+
+Two new reproducible **real Linux systems experiments** add evidence beyond
+synthetic route fixtures:
+
+- **Isolated real kernel routing fault:** two Linux network namespaces with
+  independent primary/backup veth links; an actual RTNETLINK observer and
+  C++ client watch link failure, manual static route failover, blackhole
+  injection and recovery. Three full runs passed, observing 1080 TCP attempts,
+  18 route notifications and 9 link notifications. This is **NOT FRR/BGP
+  dynamic convergence** and changes no host route.
+- **Matched poll vs epoll:** one C++17 state machine with identical socket
+  issue/deadline/sampling code switches only readiness backend. Five paired
+  trials per workload; raw connection results, errors, CPU/context switches,
+  execution order and samples' SHA-256 are recorded. No general winner
+  or exchange latency claim.
+
+    cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+    cmake --build build -j2
+    python3 scripts/benchmark_connect_reactors.py --binary build/connect_reactor_compare
+    python3 scripts/run_isolated_kernel_lab.py \
+      --compare build/connect_reactor_compare --netlink build/rtnetlink_monitor
+    python3 -m unittest discover -s tests -p test_connect_reactor_compare.py -v
+    RIL_RUN_NETNS_LIVE=1 python3 -m unittest discover \
+      -s tests -p test_isolated_kernel_lab.py -v
+
+The namespace experiment requires user-namespace and veth support on Linux,
+and refuses to modify network state without first entering new isolated
+user+network namespaces. Users on hosts without this support should treat
+the integration test as unavailable, not passed.
+
+[Detailed executed evidence, limitations and history](docs/CORE_EVIDENCE_20261108.md)
+
 ## Linux C++ event-driven systems exercise (tested on real loopback sockets)
 
 A Linux-only `epoll_connect_sampler` now samples multiple nonblocking TCP

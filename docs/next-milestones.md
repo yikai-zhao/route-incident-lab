@@ -30,3 +30,11 @@ No Ciena/private employer data, paid cloud resources, scheduled GitHub Actions, 
 14. Randomized matched-workload poll versus epoll trials with warmup,
     CPU pinning, performance counters where authorized, explicit failure
     distributions, and archived machine/compiler metadata.
+
+15. Completed evidence: three genuine isolated Linux static FIB route/dual-veth
+    link failures and recovery runs. FRR's dynamic routing protocol convergence
+    remains a separate outstanding experiment requiring Docker/Containerlab.
+16. Completed exploratory poll-vs-epoll comparison with matched backend code
+    and paired offered workload. **Not** a controlled low-latency advantage
+    claim. Next: CPU affinity, perf counters and larger randomized trial sets
+    only when the host permits meaningful measurement.
