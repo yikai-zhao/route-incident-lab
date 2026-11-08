@@ -42,6 +42,28 @@ network throughput, wire latency, or trading-system performance.
 
 Read [systems design, verification and limits](docs/SYSTEMS_ENGINEERING.md).
 
+## Real Linux kernel event observability (2026-11-08)
+
+The native C++ **read-only RTNETLINK monitor** now collects actual kernel IPv4
+route snapshots and subscribes to route/link notifications. A separate
+cross-plane analyzer correlates those observations with Linux epoll TCP
+connection samples from the **same host and boot**, using monotonic clocks.
+It does **not** claim that time-adjacent events prove causality.
+
+    cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+    cmake --build build -j2
+    python3 scripts/demo_observability.py --output lab-output/kernel-and-tcp
+
+**Verified locally:** the kernel returned 7 actual IPv4 route entries; the
+concurrent loopback server stop/restart run recorded 240 TCP attempts (180
+successes, 60 failures), and **no route/link notifications**. The correct
+diagnosis is that no kernel route/link changes were observed, not that a BGP
+failure happened. Ten new targeted kernel/correlation tests and seven existing
+epoll real-socket tests passed in this Linux runtime. Full repository tests
+and real FRR Containerlab fault injection remain unverified.
+
+Read [Linux kernel observability: evidence and limitations](docs/KERNEL_OBSERVABILITY.md).
+
 ## Real local lab (requires Docker + Containerlab)
 
 `labs/three-router/` has a three-FRR-router topology, two Linux hosts, a simple HTTP target, and an explicitly opt-in local fault controller. The topology is based on Containerlab's native `frr` kind and FRRouting configuration, **not** any private employer setup.
