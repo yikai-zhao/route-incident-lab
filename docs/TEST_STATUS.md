@@ -116,3 +116,23 @@ There are no scheduled jobs, paid services or GitHub Actions workflows.
 - Source Git blob IDs were verified against the exact locally tested code.
   Raw samples and SHA-256 digest manifest are retained separately.
 - One atomic Git main update, without adding a new remote feature branch.
+
+## Post-merge integration check on 2026-11-08
+
+A separate integrated run of the relevant five Linux systems test files
+(tests for epoll, RTNETLINK correlation, UDP feed, matched reactors and the
+isolated dual-link kernel lab) completed **33/33 PASS** with
+RIL_RUN_NETNS_LIVE=1. The opt-in test actually entered private namespaces,
+modified only isolated static FIB/link state, and observed real TCP responses
+and kernel notifications. This is not the entire original repo test suite.
+
+Exact tested new source blob SHAs:
+- cpp/connect_reactor_compare.cpp: c7d9c23377821c6ba87c6826fd3e762395f1a97f
+- scripts/benchmark_connect_reactors.py: a600d6ff94d027930097cf68ad323d6fcaff23a7
+- scripts/run_isolated_kernel_lab.py: e673e64b25bed0463dedf4d7393744479e204ef3
+- tests/test_connect_reactor_compare.py: cebd653fd9d2b85c495d454aa8509a321ffcbe82
+- tests/test_isolated_kernel_lab.py: d3a5099ffb4104f2f8de674823ebc89236631851
+
+All these SHA values were confirmed in the new main tree against the exact
+files exercised locally. Live FRR/BGP validation and a full checkout test
+suite are still pending.
