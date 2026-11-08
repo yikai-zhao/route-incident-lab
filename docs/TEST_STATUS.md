@@ -49,3 +49,19 @@ There are no scheduled jobs, paid services or GitHub Actions workflows.
 - Ran **7/7 newly added Python real-socket and input-validation tests** successfully, including a non-accepting listener backlog that exercised actual parallel in-flight sockets bounded by the configured limit.
 - Docker and Containerlab are absent here. Neither the full repository test suite nor live FRR scenarios were executed in this iteration. The preceding stage's 10 tests and historical 26-count should not be counted as a fresh full-suite result.
 - The demo outputs remain local; no GitHub Actions jobs or paid cloud services added.
+
+## 2026-11-08 read-only kernel cross-plane milestone
+
+- Added C++ Linux NETLINK_ROUTE socket monitor: real RTM_GETROUTE IPv4 route
+  snapshot, RTMGRP_IPV4_ROUTE/RTMGRP_LINK notifications, read-only JSONL,
+  explicit 0..120000 ms watch cap and monotonic receive timestamps.
+- Added same-host offline timeline correlator with input checks, SHA-256 input
+  digests, event-window failure proportions and explicit no-causality status.
+- Compiled with g++ and actually observed 7 Linux IPv4 kernel routes.
+- Ran integrated real localhost Socket lifecycle: 240 TCP attempts (180
+  success / 60 fail), seven kernel route snapshots and 0 route/link notifications.
+  This is NOT a live routing incident or measured routing convergence.
+- Verified **10/10 new targeted tests** and **7/7 existing epoll tests** in the
+  same local runtime. GitHub blob SHAs match the locally tested source bytes.
+- Still outstanding: full clean-clone repository suite and actual
+  Docker/Containerlab three-router fault tests. No cloud CI or paid resources.
