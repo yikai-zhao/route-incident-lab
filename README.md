@@ -64,6 +64,35 @@ and real FRR Containerlab fault injection remain unverified.
 
 Read [Linux kernel observability: evidence and limitations](docs/KERNEL_OBSERVABILITY.md).
 
+## Synthetic UDP multicast feed diagnostics (actual Linux sockets, 2026-11-08)
+
+A new **Linux C++17 multicast receiver** uses epoll and batched recvmmsg,
+strict 16-byte binary parsing, bounded per-stream sequence state, and
+optional kernel socket receive timestamp / RX queue overflow data.
+It distinguishes **forward sequence jumps, duplicates, and out-of-order
+arrivals**, not imaginary network packet-loss measurements.
+
+    cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+    cmake --build build -j2
+    python3 scripts/demo_multicast_feed.py --output lab-output/multicast-feed
+
+**Real local validation:** 10/10 actual IPv4 loopback multicast datagrams
+were received: 2 forward jumps, 2 late arrivals and 1 duplicate.
+The publisher intentionally sent these anomalies; no network loss claim
+is supported. Six new real-socket regressions passed, bringing the local
+subset for epoll, RTNETLINK and UDP to **23/23 passing**. The full
+repository checkout and FRR Containerlab scenarios still need validation.
+
+[Multicast packet format, receiver architecture and evidence limits](docs/MULTICAST_FEED.md)
+
+To run the entire local verification **on your own Linux checkout** without
+Docker/cloud/hosted CI:
+
+    bash scripts/verify_local.sh
+
+This creates lab-output/full-local-verification with local build/test logs
+and real loopback evidence. It is a script, not a scheduled background job.
+
 ## Real local lab (requires Docker + Containerlab)
 
 `labs/three-router/` has a three-FRR-router topology, two Linux hosts, a simple HTTP target, and an explicitly opt-in local fault controller. The topology is based on Containerlab's native `frr` kind and FRRouting configuration, **not** any private employer setup.
