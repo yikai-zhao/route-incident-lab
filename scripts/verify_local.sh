@@ -17,6 +17,7 @@ echo "Local evidence directory: $OUT"
 
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build -j2
+ctest --test-dir build --output-on-failure > "$OUT/native-tests.log" 2>&1 || { cat "$OUT/native-tests.log"; exit 1; }
 python3 -m unittest discover -s tests -v > "$OUT/tests.log" 2>&1 || {
   cat "$OUT/tests.log"
   echo "FAILED: tests; see $OUT/tests.log" >&2
@@ -31,6 +32,8 @@ python3 scripts/demo_observability.py --epoll build/epoll_connect_sampler \
   > "$OUT/kernel-and-tcp.log"
 python3 scripts/demo_multicast_feed.py --binary build/udp_feed_monitor \
   --output "$OUT/multicast-feed" > "$OUT/multicast.log"
+python3 scripts/demo_spsc_pipeline.py --binary build/udp_pipeline \
+  --output "$OUT/spsc-udp" > "$OUT/spsc-udp.log"
 
 python3 - "$OUT" <<'PY'
 import json, pathlib, sys
@@ -38,17 +41,20 @@ root = pathlib.Path(sys.argv[1])
 epoll = json.loads((root / "epoll" / "report.json").read_text())
 observe = json.loads((root / "kernel-and-tcp" / "correlation.json").read_text())
 multicast = json.loads((root / "multicast-feed" / "report.json").read_text())
+spsc = json.loads((root / "spsc-udp" / "report.json").read_text())
 assert epoll["status"] == "PASS"
 assert observe["tcp_demo_status"] == "PASS"
 assert observe["route_snapshot_records"] > 0
 assert multicast["status"] == "PASS"
+assert spsc["status"] == "PASS"
 report = {
     "verification": "PASS",
     "components": {
         "linux_epoll_connect": epoll["status"],
         "kernel_route_snapshot": observe["route_snapshot_records"],
         "cross_plane_events_observed": len(observe["event_windows"]),
-        "multicast_sequence": multicast["status"]
+        "multicast_sequence": multicast["status"],
+        "spsc_udp_backpressure": spsc["status"]
     },
     "limits": ["Loopback and read-only kernel route snapshots only.",
                "No FRR fault was injected; no external packet loss measured.",

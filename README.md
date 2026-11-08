@@ -97,6 +97,33 @@ and real FRR Containerlab fault injection remain unverified.
 
 Read [Linux kernel observability: evidence and limitations](docs/KERNEL_OBSERVABILITY.md).
 
+## Two-thread C++ SPSC UDP pipeline and real backpressure evidence
+
+The new Linux C++17 pipeline separates a real epoll/recvmmsg UDP receiver
+from its sequence-processing thread with a bounded **single-producer,
+single-consumer queue** using acquire/release atomics. Unlike inferring
+loss from missing sequence IDs, it directly counts valid packets that
+were actually received but then rejected when the application ring
+was full. It separately reports whether a kernel SO_RXQ_OVFL notice
+was observed.
+
+    cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+    cmake --build build -j2
+    ctest --test-dir build --output-on-failure
+    python3 -m unittest discover -s tests -p test_udp_pipeline.py -v
+    python3 scripts/demo_spsc_pipeline.py --binary build/udp_pipeline
+
+Local verification: **7/7 real UDP socket tests** passed under both
+normal and ASan/UBSan builds. The queue completed **200,000 strictly
+ordered cross-thread transfers**, additionally passing ThreadSanitizer.
+A real loopback multicast baseline processed 64/64 frames with 0
+application drops. In three deliberately pressured 160-frame runs,
+**131, 131 and 130** were dropped by the four-slot application queue
+respectively; kernel RX overflow was NOT observed. These are induced
+software-queue drops, not claims of wire packet loss or low latency.
+
+[Architecture, evidence and limitations](docs/SPSC_PIPELINE.md)
+
 ## Synthetic UDP multicast feed diagnostics (actual Linux sockets, 2026-11-08)
 
 A new **Linux C++17 multicast receiver** uses epoll and batched recvmmsg,

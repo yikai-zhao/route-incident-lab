@@ -45,3 +45,9 @@ Earlier historical feature refs may remain visible. The available GitHub
 connector can update refs but cannot delete old branches. Such refs should
 be deleted from GitHub's Branches UI after confirming merged and superseded
 PR status. Do not rewrite main history just to make stale refs disappear.
+
+- 2026-11-08: Local-only two-thread C++ UDP feed pipeline with bounded
+  acquire/release SPSC ring, real epoll/recvmmsg multicast, explicit
+  application drop accounting and repeated controlled consumer
+  backpressure. No new remote branch; direct main-tree commit.
+  The historical record remains append-only.

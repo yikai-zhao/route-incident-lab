@@ -38,3 +38,15 @@ No Ciena/private employer data, paid cloud resources, scheduled GitHub Actions, 
     and paired offered workload. **Not** a controlled low-latency advantage
     claim. Next: CPU affinity, perf counters and larger randomized trial sets
     only when the host permits meaningful measurement.
+
+17. Completed native two-thread epoll/recvmmsg SPSC UDP experiment with
+    real localhost multicast and explicit user-space queue drop accounting.
+    ThreadSanitizer and ASan/UBSan passed for targeted tests.
+18. Still outstanding: full original suite from clean checkout; controlled
+    matched receiver throughput and CPU profiling without JSONL overhead;
+    real Linux kernel RX queue overflow (if safely reproducible); actual
+    FRRouting BGP/Containerlab topology with dynamic failover.
+19. Separate optional project recommended for AI-infrastructure roles:
+    evidence-grounded, read-only cross-layer incident debugging assistant
+    with local LLM interface, deterministic baseline, evaluation and
+    abstention controls. Do not couple an LLM to latency-critical feed path.

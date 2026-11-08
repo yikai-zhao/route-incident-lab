@@ -136,3 +136,23 @@ Exact tested new source blob SHAs:
 All these SHA values were confirmed in the new main tree against the exact
 files exercised locally. Live FRR/BGP validation and a full checkout test
 suite are still pending.
+
+## 2026-11-08 SPSC UDP feed-pipeline evidence
+
+- Added native two-thread Linux C++17 epoll/recvmmsg UDP path with bounded
+  SPSC queue, explicit consumer backpressure and recent per-stream sequence
+  history. This is a separate data-plane experiment, not an AI or FRR model.
+- Seven real Linux UDP tests passed, both standard and ASan/UBSan builds.
+- Cross-thread SPSC native test passed 200000 ordered messages; independently
+  passed ThreadSanitizer and ASan+UBSan on this host.
+- Actual IPv4 loopback multicast experiments: healthy 64/64 processed, zero
+  application drops. With 4 queue slots and 7ms consumer delay, three 160-frame
+  repetitions produced 131, 131 and 130 explicitly counted application ring
+  drops. All per-run processed+ring_dropped == valid_received checks passed.
+- Kernel SO_RXQ_OVFL mechanism enabled, but no overflow ancillary message was
+  observed. Do NOT claim Linux socket-buffer drops or true network packet
+  loss from these demonstrations.
+- Exact local tested source Git blob hashes match those staged for main;
+  only the test's executable path is set to build/udp_pipeline in repository.
+- No hosted Actions runners, cloud or paid model API are used or created.
+- Full original repository regression remains a separate unverified item.
