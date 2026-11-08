@@ -16,6 +16,32 @@ python3 -m unittest discover -s tests -v
 
 Three fixture scenarios: loss of both BGP paths, failover from a direct BGP link to an alternate, and an application blackhole even while the FRR selected route and Linux main-table route remain in place. These are **deliberately synthetic fixtures** that exercise the analyzer, not measurements from a live network.
 
+## Linux C++ event-driven systems exercise (tested on real loopback sockets)
+
+A Linux-only `epoll_connect_sampler` now samples multiple nonblocking TCP
+connections with bounded concurrency, per-connection deadlines, RAII file
+descriptor management, `SO_ERROR` verification, and raw timestamped JSONL.
+Unlike the offline route fixtures, its test harness interacts with **real
+localhost socket connections**.
+
+```bash
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build -j2
+python3 scripts/demo_epoll_local.py --binary build/epoll_connect_sampler
+python3 -m unittest discover -s tests -p test_epoll_sampler.py -v
+```
+
+The demonstration stops and restarts a temporary local TCP listener while the
+C++ client is continuously sampling. It writes `lab-output/epoll-loopback/report.json`
+and `samples.jsonl`. In one actual Linux loopback run there were 240 connection
+attempts: **61 healthy successes, 60 refusals while the server was down, and
+119 recovery successes**. Seven new Linux socket tests passed, including a
+real accept-backlog saturation test that forces overlapping pending sockets.
+This is **not** evidence of live FRR/BGP fault recovery, HTTP delivery, remote
+network throughput, wire latency, or trading-system performance.
+
+Read [systems design, verification and limits](docs/SYSTEMS_ENGINEERING.md).
+
 ## Real local lab (requires Docker + Containerlab)
 
 `labs/three-router/` has a three-FRR-router topology, two Linux hosts, a simple HTTP target, and an explicitly opt-in local fault controller. The topology is based on Containerlab's native `frr` kind and FRRouting configuration, **not** any private employer setup.
