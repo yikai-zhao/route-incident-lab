@@ -156,3 +156,10 @@ suite are still pending.
   only the test's executable path is set to build/udp_pipeline in repository.
 - No hosted Actions runners, cloud or paid model API are used or created.
 - Full original repository regression remains a separate unverified item.
+
+## 2026-11-08 independent UDP evidence audit
+
+- Read-only verification of raw SHA-256, count conservation, timestamps, ring capacity, and pressure observations.
+- Five targeted regression tests: valid, tampered, missing, forged accounting and negative timestamps.
+- Existing real Linux four-trial evidence was independently audited locally and passed (64 healthy; 131/131/130 application drops).
+- This verifies consistency, not original sender authenticity. No Actions or paid services.

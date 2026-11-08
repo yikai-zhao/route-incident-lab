@@ -124,6 +124,13 @@ software-queue drops, not claims of wire packet loss or low latency.
 
 [Architecture, evidence and limitations](docs/SPSC_PIPELINE.md)
 
+Verify saved evidence without rerunning sockets:
+
+    python3 scripts/audit_spsc_evidence.py lab-output/spsc-udp
+
+This checks raw SHA-256, frame accounting, queue capacity and monotonic timestamps; it cannot authenticate publisher identity or prove physical wire loss.
+
+
 ## Synthetic UDP multicast feed diagnostics (actual Linux sockets, 2026-11-08)
 
 A new **Linux C++17 multicast receiver** uses epoll and batched recvmmsg,
