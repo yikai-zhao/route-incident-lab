@@ -40,3 +40,12 @@ There are no scheduled jobs, paid services or GitHub Actions workflows.
 - Full live FRR/Containerlab fault injection is **still unverified here** because Docker and Containerlab are unavailable. No real convergence or failover timing result is claimed.
 - Completed local lab runs now produce `incident.md` and `audit.json` automatically, with independent offline recheck via `python3 scripts/audit_run.py --run-dir lab-output/<scenario>`.
 - No GitHub Actions workflows have been added; no paid cloud compute is required for the test path.
+
+## 2026-11-08 Linux epoll systems exercise
+
+- New `cpp/epoll_connect_sampler.cpp`: bounded Linux nonblocking socket + epoll client, individual connect observations, errno, monotonic timestamps, per-attempt timeouts and p50/p95/p99 on success samples only.
+- Compiled with `g++ -std=c++17 -O2 -Wall -Wextra -Wpedantic` in an isolated local Linux workspace.
+- Ran one actual localhost listener stop/restart against the C++ sampler: 240 attempts total; healthy 61 success / 0 fail, listener down 0 success / 60 fail, recovered 119 success / 0 fail. This is not BGP/network-fault evidence.
+- Ran **7/7 newly added Python real-socket and input-validation tests** successfully, including a non-accepting listener backlog that exercised actual parallel in-flight sockets bounded by the configured limit.
+- Docker and Containerlab are absent here. Neither the full repository test suite nor live FRR scenarios were executed in this iteration. The preceding stage's 10 tests and historical 26-count should not be counted as a fresh full-suite result.
+- The demo outputs remain local; no GitHub Actions jobs or paid cloud services added.
