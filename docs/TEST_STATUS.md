@@ -1,4 +1,4 @@
-# Evidence and test status (2026-11-02)
+# Evidence and test status (updated 2026-11-07)
 
 ## Implemented in source
 
@@ -32,3 +32,11 @@ PYTHONPATH=src python3 scripts/lab_run.py --scenario route_ok_blackhole --allow-
 
 Review each live report and the recorded continuous HTTP samples before making recovery claims.
 There are no scheduled jobs, paid services or GitHub Actions workflows.
+
+## 2026-11-07 evidence note
+
+- The newly added HTTP status parser and artifact audit have **10 new unit/real-loopback-socket tests passing in an isolated local checkout**. This is not a claim that the entire repository test suite ran successfully; the full revised suite still needs fresh checkout validation.
+- The modified HTTP probe was run against a temporary real loopback HTTP server for five requests: 5/5 received HTTP 200. This validates only localhost HTTP parsing, not BGP/Containerlab execution.
+- Full live FRR/Containerlab fault injection is **still unverified here** because Docker and Containerlab are unavailable. No real convergence or failover timing result is claimed.
+- Completed local lab runs now produce `incident.md` and `audit.json` automatically, with independent offline recheck via `python3 scripts/audit_run.py --run-dir lab-output/<scenario>`.
+- No GitHub Actions workflows have been added; no paid cloud compute is required for the test path.
