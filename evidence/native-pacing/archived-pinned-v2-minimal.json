@@ -1,0 +1,294 @@
+{
+  "description": "Condensed real Linux loopback trial summaries; raw records live in companion local evidence archive, not git.",
+  "source": "2026-11-08 native-pinned-v2 (18 trials, 9 pairs)",
+  "records": [
+    {
+      "status": "PASS",
+      "rate_target_pps": 1000,
+      "idle": "sleep",
+      "pair": 0,
+      "sender": {
+        "achieved_sendto_pps": 1000.07,
+        "successful_sendto": 600
+      },
+      "receiver": {
+        "processed": 600,
+        "queue_p99_us": 281.92
+      },
+      "archive_source_filename": "001000-00-sleep.json",
+      "archive_source_sha256": "65d08fff1cda6a64b8d2f9c56edf484723f94e5a520d4f5f8c85b26f834cb48c"
+    },
+    {
+      "status": "PASS",
+      "rate_target_pps": 1000,
+      "idle": "spin",
+      "pair": 0,
+      "sender": {
+        "achieved_sendto_pps": 1000.14,
+        "successful_sendto": 600
+      },
+      "receiver": {
+        "processed": 600,
+        "queue_p99_us": 365.271
+      },
+      "archive_source_filename": "001000-00-spin.json",
+      "archive_source_sha256": "82cefb6e5810ea65e4f616b35d903827733f11df3702d2c670ca71272b686f29"
+    },
+    {
+      "status": "PASS",
+      "rate_target_pps": 1000,
+      "idle": "sleep",
+      "pair": 1,
+      "sender": {
+        "achieved_sendto_pps": 1000.38,
+        "successful_sendto": 600
+      },
+      "receiver": {
+        "processed": 600,
+        "queue_p99_us": 385.83
+      },
+      "archive_source_filename": "001000-01-sleep.json",
+      "archive_source_sha256": "d10bf5b9d4cb09d61857182722d2e3db2a984e58b4faea70782c799423b6ff2a"
+    },
+    {
+      "status": "PASS",
+      "rate_target_pps": 1000,
+      "idle": "spin",
+      "pair": 1,
+      "sender": {
+        "achieved_sendto_pps": 1002.3,
+        "successful_sendto": 600
+      },
+      "receiver": {
+        "processed": 600,
+        "queue_p99_us": 188.146
+      },
+      "archive_source_filename": "001000-01-spin.json",
+      "archive_source_sha256": "f7d12db6bc43df32897dbeacbc1d884b17fcf9b9903fb94edc984d0e112dbaad"
+    },
+    {
+      "status": "PASS",
+      "rate_target_pps": 1000,
+      "idle": "sleep",
+      "pair": 2,
+      "sender": {
+        "achieved_sendto_pps": 1000.06,
+        "successful_sendto": 600
+      },
+      "receiver": {
+        "processed": 600,
+        "queue_p99_us": 308.934
+      },
+      "archive_source_filename": "001000-02-sleep.json",
+      "archive_source_sha256": "3b3830604cbfe10c112da4f9453197151d7dac150a3131a9ab52f385335aff08"
+    },
+    {
+      "status": "PASS",
+      "rate_target_pps": 1000,
+      "idle": "spin",
+      "pair": 2,
+      "sender": {
+        "achieved_sendto_pps": 1000.15,
+        "successful_sendto": 600
+      },
+      "receiver": {
+        "processed": 600,
+        "queue_p99_us": 339.522
+      },
+      "archive_source_filename": "001000-02-spin.json",
+      "archive_source_sha256": "98f82cfe8950af5f84a554e8dc2e0fd01e3d44117c08eea457f9ad15b34df238"
+    },
+    {
+      "status": "PASS",
+      "rate_target_pps": 5000,
+      "idle": "sleep",
+      "pair": 0,
+      "sender": {
+        "achieved_sendto_pps": 5002.77,
+        "successful_sendto": 600
+      },
+      "receiver": {
+        "processed": 600,
+        "queue_p99_us": 460.679
+      },
+      "archive_source_filename": "005000-00-sleep.json",
+      "archive_source_sha256": "b8f817e0cc3b0f6e06b96d2f4475e04aa23df706b6ace8d4c761e03c1ad1af22"
+    },
+    {
+      "status": "PASS",
+      "rate_target_pps": 5000,
+      "idle": "spin",
+      "pair": 0,
+      "sender": {
+        "achieved_sendto_pps": 5005.38,
+        "successful_sendto": 600
+      },
+      "receiver": {
+        "processed": 600,
+        "queue_p99_us": 505.87
+      },
+      "archive_source_filename": "005000-00-spin.json",
+      "archive_source_sha256": "40962752608feb40bae1261246b9a51dfbeab08fab3825424c1fab84d0343830"
+    },
+    {
+      "status": "PASS",
+      "rate_target_pps": 5000,
+      "idle": "sleep",
+      "pair": 1,
+      "sender": {
+        "achieved_sendto_pps": 4995.94,
+        "successful_sendto": 600
+      },
+      "receiver": {
+        "processed": 600,
+        "queue_p99_us": 836.209
+      },
+      "archive_source_filename": "005000-01-sleep.json",
+      "archive_source_sha256": "3a2d70516b617af058c9ac1c2d59c5ee6e31ccabc719717b66ad3708b4daebb9"
+    },
+    {
+      "status": "PASS",
+      "rate_target_pps": 5000,
+      "idle": "spin",
+      "pair": 1,
+      "sender": {
+        "achieved_sendto_pps": 5002.45,
+        "successful_sendto": 600
+      },
+      "receiver": {
+        "processed": 600,
+        "queue_p99_us": 104.676
+      },
+      "archive_source_filename": "005000-01-spin.json",
+      "archive_source_sha256": "9167fa378ee755af4c93f645df9c6be59dc2adb8b68c45b5f7d041ef15c23f4c"
+    },
+    {
+      "status": "PASS",
+      "rate_target_pps": 5000,
+      "idle": "sleep",
+      "pair": 2,
+      "sender": {
+        "achieved_sendto_pps": 5003.7,
+        "successful_sendto": 600
+      },
+      "receiver": {
+        "processed": 600,
+        "queue_p99_us": 229.143
+      },
+      "archive_source_filename": "005000-02-sleep.json",
+      "archive_source_sha256": "0cfe818024ca4db8ec2f2647a97a57cad0ab53b4d5c5dee513a2ebb821552641"
+    },
+    {
+      "status": "PASS",
+      "rate_target_pps": 5000,
+      "idle": "spin",
+      "pair": 2,
+      "sender": {
+        "achieved_sendto_pps": 5002.94,
+        "successful_sendto": 600
+      },
+      "receiver": {
+        "processed": 600,
+        "queue_p99_us": 110.911
+      },
+      "archive_source_filename": "005000-02-spin.json",
+      "archive_source_sha256": "7bc9ca5dcd0af9686444e5f78d8f4f5f6704c6f5203088110842ee2637c93c2f"
+    },
+    {
+      "status": "PASS",
+      "rate_target_pps": 20000,
+      "idle": "sleep",
+      "pair": 0,
+      "sender": {
+        "achieved_sendto_pps": 17317.1,
+        "successful_sendto": 600
+      },
+      "receiver": {
+        "processed": 600,
+        "queue_p99_us": 334.267
+      },
+      "archive_source_filename": "020000-00-sleep.json",
+      "archive_source_sha256": "d5859b2a269ea3af780d73a111c4e2f94da3226f05f853137b541d1beb35c0c5"
+    },
+    {
+      "status": "PASS",
+      "rate_target_pps": 20000,
+      "idle": "spin",
+      "pair": 0,
+      "sender": {
+        "achieved_sendto_pps": 17034.7,
+        "successful_sendto": 600
+      },
+      "receiver": {
+        "processed": 600,
+        "queue_p99_us": 378.125
+      },
+      "archive_source_filename": "020000-00-spin.json",
+      "archive_source_sha256": "ba4042176e0ecb4a2dce716948e41bb0a99a21873445af54c264bfc2aaa795af"
+    },
+    {
+      "status": "PASS",
+      "rate_target_pps": 20000,
+      "idle": "sleep",
+      "pair": 1,
+      "sender": {
+        "achieved_sendto_pps": 19651.4,
+        "successful_sendto": 600
+      },
+      "receiver": {
+        "processed": 600,
+        "queue_p99_us": 222.572
+      },
+      "archive_source_filename": "020000-01-sleep.json",
+      "archive_source_sha256": "af6d456bd843adbed85d93e0b36c786994cd0c9134eb347ff8c8cc991ba59f1b"
+    },
+    {
+      "status": "PASS",
+      "rate_target_pps": 20000,
+      "idle": "spin",
+      "pair": 1,
+      "sender": {
+        "achieved_sendto_pps": 19924.4,
+        "successful_sendto": 600
+      },
+      "receiver": {
+        "processed": 600,
+        "queue_p99_us": 26.9464
+      },
+      "archive_source_filename": "020000-01-spin.json",
+      "archive_source_sha256": "ae453de6e4c16faa34d16453e6d877a10b6ab9981b6afe8c44514b72e43c4998"
+    },
+    {
+      "status": "PASS",
+      "rate_target_pps": 20000,
+      "idle": "sleep",
+      "pair": 2,
+      "sender": {
+        "achieved_sendto_pps": 18838.9,
+        "successful_sendto": 600
+      },
+      "receiver": {
+        "processed": 600,
+        "queue_p99_us": 304.118
+      },
+      "archive_source_filename": "020000-02-sleep.json",
+      "archive_source_sha256": "99d9525e86086184e500607e7152524c114ebb886af1629ea8027bc78d3a40ab"
+    },
+    {
+      "status": "PASS",
+      "rate_target_pps": 20000,
+      "idle": "spin",
+      "pair": 2,
+      "sender": {
+        "achieved_sendto_pps": 20307.9,
+        "successful_sendto": 600
+      },
+      "receiver": {
+        "processed": 600,
+        "queue_p99_us": 60.7986
+      },
+      "archive_source_filename": "020000-02-spin.json",
+      "archive_source_sha256": "b0db303e3fe498228b292c1f81c6f3c3476a20656d4b23f33845dcdf655f52ad"
+    }
+  ]
+}
