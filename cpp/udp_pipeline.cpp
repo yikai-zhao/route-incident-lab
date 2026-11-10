@@ -82,6 +82,7 @@ struct ConsumerStats {
   uint64_t processed=0, first=0, in_order=0, duplicate=0, forward_gap=0, reordering=0;
   uint64_t missing_candidates=0;
   std::vector<double> queue_delay_us;
+  uint64_t queue_sample_capacity_grows=0;
   std::map<uint32_t,StreamState> streams;
 };
 
@@ -140,6 +141,11 @@ int run(int argc, char** argv) {
 
   std::atomic<bool> completed{false};
   ConsumerStats consumer;
+  // Preallocate bounded sample storage before starting the consumer thread.
+  // In the previous datapath, vector growth could allocate/copy on dequeue.
+  // This removes that avoidable hot-path allocation, not all allocations in
+  // stream classification or JSONL logging.
+  consumer.queue_delay_us.reserve(target);
   std::exception_ptr worker_error;
   long long worker_cpu_ns=0;
   std::thread worker([&]{
@@ -153,6 +159,8 @@ int run(int argc, char** argv) {
         }
         const auto now=monotonic_ns();
         const double delay=std::max<double>(0,static_cast<double>(now-packet.received_ns)/1000.0);
+        if (consumer.queue_delay_us.size() == consumer.queue_delay_us.capacity())
+          ++consumer.queue_sample_capacity_grows;
         consumer.queue_delay_us.push_back(delay);
         std::string kind="first";
         if (consumer.streams.size() >= 64 && !consumer.streams.count(packet.stream_id))
@@ -279,6 +287,7 @@ int run(int argc, char** argv) {
            <<",\"process_cpu_ns\":"<<total_cpu_ns
            <<",\"process_cpu_startup_ns\":"<<startup_cpu_ns
            <<",\"process_cpu_active_ns\":"<<active_cpu_ns
+           <<",\"queue_sample_capacity_grows\":"<<consumer.queue_sample_capacity_grows
            <<",\"consumer_thread_cpu_ns\":"<<worker_cpu_ns
            <<",\"voluntary_context_switches\":"<<usage.ru_nvcsw
            <<",\"involuntary_context_switches\":"<<usage.ru_nivcsw

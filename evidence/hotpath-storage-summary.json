@@ -1,0 +1,78 @@
+{
+  "scope": "Linux IPv4 loopback; per-packet queue sample buffer capacity allocations only",
+  "source_sha256": "6883fffbfa99fbd49bdee04260e9b110d6fc77ee3c0ef13fbc289e1576c0ec22",
+  "ring_header_sha256": "4d6ffb96cd378d416b2e9c1f104963d5efe4df8493468430a010b1e4425d7c89",
+  "publisher_source_sha256": "89d0df5d7d261a94a646ce106e60f9cc8807746935f183d0f662ca7d8ecc5d77",
+  "kernel": "6.18.57",
+  "status": "PASS",
+  "design": "3 alternating-order pairs; 200 ordered datagrams each; 600 target sendto pps; same C++ source except reserve(target)",
+  "note": "Only vector capacity growth is counted. Other allocations remain. No statistically justified CPU or p99 speedup is claimed.",
+  "trials": [
+    {
+      "pair": 0,
+      "variant": "before",
+      "reject_reasons": [],
+      "actual_send_pps": 600.043,
+      "processed": 200,
+      "queue_sample_capacity_grows": 9,
+      "active_cpu_us_per_frame": 139.91,
+      "queue_p99_us": 184.521,
+      "receiver_sha256": "7f75ff7396b63bf94aec0616d239ce7116bb871ffbe900c192130b2c001ac358"
+    },
+    {
+      "pair": 0,
+      "variant": "after",
+      "reject_reasons": [],
+      "actual_send_pps": 600.153,
+      "processed": 200,
+      "queue_sample_capacity_grows": 0,
+      "active_cpu_us_per_frame": 127.0672,
+      "queue_p99_us": 159.858,
+      "receiver_sha256": "3fb7f592c7ef55af288588c9a68979e273fe0579f8196770180b247738fdf281"
+    },
+    {
+      "pair": 1,
+      "variant": "after",
+      "reject_reasons": [],
+      "actual_send_pps": 600.215,
+      "processed": 200,
+      "queue_sample_capacity_grows": 0,
+      "active_cpu_us_per_frame": 123.0486,
+      "queue_p99_us": 160.267,
+      "receiver_sha256": "3fb7f592c7ef55af288588c9a68979e273fe0579f8196770180b247738fdf281"
+    },
+    {
+      "pair": 1,
+      "variant": "before",
+      "reject_reasons": [],
+      "actual_send_pps": 600.049,
+      "processed": 200,
+      "queue_sample_capacity_grows": 9,
+      "active_cpu_us_per_frame": 119.194,
+      "queue_p99_us": 218.79,
+      "receiver_sha256": "7f75ff7396b63bf94aec0616d239ce7116bb871ffbe900c192130b2c001ac358"
+    },
+    {
+      "pair": 2,
+      "variant": "before",
+      "reject_reasons": [],
+      "actual_send_pps": 599.923,
+      "processed": 200,
+      "queue_sample_capacity_grows": 9,
+      "active_cpu_us_per_frame": 123.6976,
+      "queue_p99_us": 200.11,
+      "receiver_sha256": "7f75ff7396b63bf94aec0616d239ce7116bb871ffbe900c192130b2c001ac358"
+    },
+    {
+      "pair": 2,
+      "variant": "after",
+      "reject_reasons": [],
+      "actual_send_pps": 600.048,
+      "processed": 200,
+      "queue_sample_capacity_grows": 0,
+      "active_cpu_us_per_frame": 123.883,
+      "queue_p99_us": 245.605,
+      "receiver_sha256": "3fb7f592c7ef55af288588c9a68979e273fe0579f8196770180b247738fdf281"
+    }
+  ]
+}

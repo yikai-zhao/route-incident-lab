@@ -40,6 +40,8 @@ For routing reproduction, see [isolated kernel lab](docs/CORE_EVIDENCE_20261108.
 
 **New real-socket measurement (2026-11-10):** Two independently repeated, randomized 4-mode receiver experiments (48 actual Linux UDP trials; all 12 matched mode-groups passed pacing/integrity checks) compared `recvmsg`/`recvmmsg` and sleep/spin under the same C++ parser and queue. Busy spin consistently cost far more active CPU, while queue p99 rankings varied markedly between campaigns; at 1k–5k paced pps `recvmmsg` rarely batched multiple packets. **No general speedup claimed.** [Reproduction, rejected claims and source-hash-linked evidence](docs/UDP_NATIVE_RECEIVER_COMPARISON.md).
 
+**Measured hot-path storage change (2026-11-10).** In three matched real UDP receiver pairs, bounded preallocation eliminated 9 per-trial latency-sample vector capacity growth events (9 → 0). This is not evidence of a stable CPU or p99 latency improvement. [Reproduction and raw comparison](docs/HOTPATH_STORAGE_20261110.md).
+
 ## Important boundaries
 
 - **Not measured:** NIC hardware timestamps, exchange market data, wire-to-wire latency, maximum sustainable line rate, cross-host time synchronization, `perf` flamegraphs, or real BGP convergence times.
