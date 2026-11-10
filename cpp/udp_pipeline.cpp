@@ -147,15 +147,26 @@ int run(int argc, char** argv) {
   // stream classification or JSONL logging.
   consumer.queue_delay_us.reserve(target);
   std::exception_ptr worker_error;
-  long long worker_cpu_ns=0;
+  long long worker_cpu_ns=0, worker_active_cpu_ns=0;
+  long worker_active_voluntary_switches=-1, worker_active_involuntary_switches=-1;
+  long worker_voluntary_switches=-1,worker_involuntary_switches=-1;
   std::thread worker([&]{
     try {
+      rusage usage_before{};
+      if (::getrusage(RUSAGE_THREAD,&usage_before)<0) throw std::runtime_error("worker getrusage before failed");
       const auto cpu_start=cpu_ns(CLOCK_THREAD_CPUTIME_ID);
       Packet packet{};
+      long long active_cpu_start=-1;
+      rusage active_usage_start{};
       while (!completed.load(std::memory_order_acquire) || queue.size_approx()>0) {
         if (!queue.try_pop(packet)) {
           if (!spin_wait) std::this_thread::sleep_for(std::chrono::microseconds(100));
           continue;
+        }
+        if (active_cpu_start<0) {
+          active_cpu_start=cpu_ns(CLOCK_THREAD_CPUTIME_ID);
+          if (::getrusage(RUSAGE_THREAD,&active_usage_start)<0)
+            throw std::runtime_error("worker getrusage active-start failed");
         }
         const auto now=monotonic_ns();
         const double delay=std::max<double>(0,static_cast<double>(now-packet.received_ns)/1000.0);
@@ -187,7 +198,17 @@ int run(int argc, char** argv) {
         if (write_jsonl && !output) throw std::runtime_error("consumer JSONL write failed");
         if(consumer_delay_us) std::this_thread::sleep_for(std::chrono::microseconds(consumer_delay_us));
       }
-      worker_cpu_ns=cpu_ns(CLOCK_THREAD_CPUTIME_ID)-cpu_start;
+      const long long cpu_end=cpu_ns(CLOCK_THREAD_CPUTIME_ID);
+      worker_cpu_ns=cpu_end-cpu_start;
+      worker_active_cpu_ns=active_cpu_start>=0 ? cpu_end-active_cpu_start : 0;
+      rusage usage_after{};
+      if (::getrusage(RUSAGE_THREAD,&usage_after)<0) throw std::runtime_error("worker getrusage after failed");
+      worker_voluntary_switches=usage_after.ru_nvcsw-usage_before.ru_nvcsw;
+      worker_involuntary_switches=usage_after.ru_nivcsw-usage_before.ru_nivcsw;
+      worker_active_voluntary_switches=active_cpu_start>=0 ?
+        usage_after.ru_nvcsw-active_usage_start.ru_nvcsw : 0;
+      worker_active_involuntary_switches=active_cpu_start>=0 ?
+        usage_after.ru_nivcsw-active_usage_start.ru_nivcsw : 0;
     } catch (...) {worker_error=std::current_exception();}
   });
 
@@ -289,6 +310,11 @@ int run(int argc, char** argv) {
            <<",\"process_cpu_active_ns\":"<<active_cpu_ns
            <<",\"queue_sample_capacity_grows\":"<<consumer.queue_sample_capacity_grows
            <<",\"consumer_thread_cpu_ns\":"<<worker_cpu_ns
+           <<",\"consumer_active_cpu_ns\":"<<worker_active_cpu_ns
+           <<",\"consumer_active_voluntary_context_switches\":"<<worker_active_voluntary_switches
+           <<",\"consumer_active_involuntary_context_switches\":"<<worker_active_involuntary_switches
+           <<",\"consumer_voluntary_context_switches\":"<<worker_voluntary_switches
+           <<",\"consumer_involuntary_context_switches\":"<<worker_involuntary_switches
            <<",\"voluntary_context_switches\":"<<usage.ru_nvcsw
            <<",\"involuntary_context_switches\":"<<usage.ru_nivcsw
            <<",\"max_rss_kib\":"<<usage.ru_maxrss

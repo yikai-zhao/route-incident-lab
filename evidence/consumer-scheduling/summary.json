@@ -1,0 +1,46 @@
+[
+  {
+    "target_pps": 1000,
+    "mode": "sleep",
+    "valid": 3,
+    "consumer_cpu_ms_median": 55.478,
+    "consumer_active_cpu_ms_median": 47.164,
+    "consumer_active_voluntary_switches_median": 3463,
+    "consumer_voluntary_switches_median": 4093,
+    "consumer_involuntary_switches_median": 0,
+    "queue_p99_us_median": 277.591
+  },
+  {
+    "target_pps": 1000,
+    "mode": "spin",
+    "valid": 3,
+    "consumer_cpu_ms_median": 705.165,
+    "consumer_active_cpu_ms_median": 598.917,
+    "consumer_active_voluntary_switches_median": 0,
+    "consumer_voluntary_switches_median": 0,
+    "consumer_involuntary_switches_median": 2,
+    "queue_p99_us_median": 294.642
+  },
+  {
+    "target_pps": 5000,
+    "mode": "sleep",
+    "valid": 3,
+    "consumer_cpu_ms_median": 20.481,
+    "consumer_active_cpu_ms_median": 11.018,
+    "consumer_active_voluntary_switches_median": 668,
+    "consumer_voluntary_switches_median": 1261,
+    "consumer_involuntary_switches_median": 0,
+    "queue_p99_us_median": 345.898
+  },
+  {
+    "target_pps": 5000,
+    "mode": "spin",
+    "valid": 3,
+    "consumer_cpu_ms_median": 225.331,
+    "consumer_active_cpu_ms_median": 119.699,
+    "consumer_active_voluntary_switches_median": 0,
+    "consumer_voluntary_switches_median": 0,
+    "consumer_involuntary_switches_median": 3,
+    "queue_p99_us_median": 379.822
+  }
+]
