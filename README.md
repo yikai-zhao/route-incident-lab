@@ -38,6 +38,8 @@ For routing reproduction, see [isolated kernel lab](docs/CORE_EVIDENCE_20261108.
 
 **Latest correctness audit (2026-11-10):** A final batched `recvmmsg` call previously could remove extra kernel datagrams beyond the target without counting them. The receiver now bounds the last batch and enforces syscall-consumed versus processed-datagram accounting. This is a reliability correction, **not** a latency improvement. [Reproduction and limits](docs/UDP_RECEIVE_TARGET_AUDIT.md).
 
+**New real-socket measurement (2026-11-10):** Two independently repeated, randomized 4-mode receiver experiments (48 actual Linux UDP trials; all 12 matched mode-groups passed pacing/integrity checks) compared `recvmsg`/`recvmmsg` and sleep/spin under the same C++ parser and queue. Busy spin consistently cost far more active CPU, while queue p99 rankings varied markedly between campaigns; at 1k–5k paced pps `recvmmsg` rarely batched multiple packets. **No general speedup claimed.** [Reproduction, rejected claims and source-hash-linked evidence](docs/UDP_NATIVE_RECEIVER_COMPARISON.md).
+
 ## Important boundaries
 
 - **Not measured:** NIC hardware timestamps, exchange market data, wire-to-wire latency, maximum sustainable line rate, cross-host time synchronization, `perf` flamegraphs, or real BGP convergence times.

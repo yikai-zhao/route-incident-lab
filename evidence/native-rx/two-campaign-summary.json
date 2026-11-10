@@ -1,0 +1,232 @@
+{
+  "scope": "observed CPU and application SPSC residence under two local Linux loopback campaigns",
+  "source_sha": {
+    "receiver_cpp_blob": "864bca345e1137fe090b41a5b4742e7730263692",
+    "publisher_cpp_blob": "e81451db1382383e8c8c8954e507945c04313ec8",
+    "ring_h_blob": "3550edcadfcca759eb6009ce744fba94a1cdd1a3"
+  },
+  "campaigns": [
+    {
+      "campaign": "empirical",
+      "report_sha256": "c02fb4c8c5f359890429bfac371dbc0c36c5fae7279d40003316228855c92b55",
+      "receiver_binary_sha256": "a73c65ed51d012febc488489523f660b476f6551ef2c2f1b319896e4469a1b24",
+      "publisher_binary_sha256": "12b988dd25ef94b1e10ca871417718533bf99c21bedbaebc7672a6a75034af7d",
+      "design": {
+        "rates": [
+          1000,
+          5000
+        ],
+        "count": 600,
+        "repeats": 3,
+        "seed": 1811,
+        "rate_tolerance": 0.1,
+        "within_group_rate_tolerance": 0.05,
+        "mode_order": "randomized, every group contains all modes"
+      },
+      "summaries": [
+        {
+          "target_pps": 1000,
+          "valid_pairs": 3,
+          "total_pairs": 3,
+          "modes": [
+            {
+              "rx": "batch",
+              "idle": "sleep",
+              "valid_comparable_trials": 3,
+              "median_queue_p99_us": 242.35,
+              "median_active_cpu_us_frame": 76.269,
+              "median_syscalls_per_frame": 1.0,
+              "median_actual_pps": 1000.1
+            },
+            {
+              "rx": "scalar",
+              "idle": "sleep",
+              "valid_comparable_trials": 3,
+              "median_queue_p99_us": 178.116,
+              "median_active_cpu_us_frame": 87.124,
+              "median_syscalls_per_frame": 1.0,
+              "median_actual_pps": 1000.1
+            },
+            {
+              "rx": "batch",
+              "idle": "spin",
+              "valid_comparable_trials": 3,
+              "median_queue_p99_us": 230.187,
+              "median_active_cpu_us_frame": 1009.531,
+              "median_syscalls_per_frame": 0.996667,
+              "median_actual_pps": 1000.1
+            },
+            {
+              "rx": "scalar",
+              "idle": "spin",
+              "valid_comparable_trials": 3,
+              "median_queue_p99_us": 992.565,
+              "median_active_cpu_us_frame": 1013.496,
+              "median_syscalls_per_frame": 1.0,
+              "median_actual_pps": 1000.2
+            }
+          ]
+        },
+        {
+          "target_pps": 5000,
+          "valid_pairs": 3,
+          "total_pairs": 3,
+          "modes": [
+            {
+              "rx": "batch",
+              "idle": "sleep",
+              "valid_comparable_trials": 3,
+              "median_queue_p99_us": 165.132,
+              "median_active_cpu_us_frame": 18.612,
+              "median_syscalls_per_frame": 0.996667,
+              "median_actual_pps": 5002.3
+            },
+            {
+              "rx": "scalar",
+              "idle": "sleep",
+              "valid_comparable_trials": 3,
+              "median_queue_p99_us": 298.514,
+              "median_active_cpu_us_frame": 18.378,
+              "median_syscalls_per_frame": 1.0,
+              "median_actual_pps": 5003.7
+            },
+            {
+              "rx": "batch",
+              "idle": "spin",
+              "valid_comparable_trials": 3,
+              "median_queue_p99_us": 69.704,
+              "median_active_cpu_us_frame": 210.158,
+              "median_syscalls_per_frame": 0.985,
+              "median_actual_pps": 5004.0
+            },
+            {
+              "rx": "scalar",
+              "idle": "spin",
+              "valid_comparable_trials": 3,
+              "median_queue_p99_us": 82.467,
+              "median_active_cpu_us_frame": 205.78,
+              "median_syscalls_per_frame": 1.0,
+              "median_actual_pps": 5003.2
+            }
+          ]
+        }
+      ],
+      "valid_group_count": 6,
+      "total_group_count": 6
+    },
+    {
+      "campaign": "empirical-verified",
+      "report_sha256": "54e9db611351044dfde83d5c68701ba91bb807490e0dfae071f7a25637acefa3",
+      "receiver_binary_sha256": "a73c65ed51d012febc488489523f660b476f6551ef2c2f1b319896e4469a1b24",
+      "publisher_binary_sha256": "12b988dd25ef94b1e10ca871417718533bf99c21bedbaebc7672a6a75034af7d",
+      "design": {
+        "rates": [
+          1000,
+          5000
+        ],
+        "count": 600,
+        "repeats": 3,
+        "seed": 1811,
+        "rate_tolerance": 0.1,
+        "within_group_rate_tolerance": 0.05,
+        "mode_order": "randomized, every group contains all modes"
+      },
+      "summaries": [
+        {
+          "target_pps": 1000,
+          "valid_pairs": 3,
+          "total_pairs": 3,
+          "modes": [
+            {
+              "rx": "batch",
+              "idle": "sleep",
+              "valid_comparable_trials": 3,
+              "median_queue_p99_us": 174.8,
+              "median_active_cpu_us_frame": 81.267,
+              "median_syscalls_per_frame": 1.0,
+              "median_actual_pps": 1000.0
+            },
+            {
+              "rx": "scalar",
+              "idle": "sleep",
+              "valid_comparable_trials": 3,
+              "median_queue_p99_us": 203.534,
+              "median_active_cpu_us_frame": 78.806,
+              "median_syscalls_per_frame": 1.0,
+              "median_actual_pps": 1000.1
+            },
+            {
+              "rx": "batch",
+              "idle": "spin",
+              "valid_comparable_trials": 3,
+              "median_queue_p99_us": 210.308,
+              "median_active_cpu_us_frame": 1014.891,
+              "median_syscalls_per_frame": 1.0,
+              "median_actual_pps": 1000.1
+            },
+            {
+              "rx": "scalar",
+              "idle": "spin",
+              "valid_comparable_trials": 3,
+              "median_queue_p99_us": 251.504,
+              "median_active_cpu_us_frame": 1014.078,
+              "median_syscalls_per_frame": 1.0,
+              "median_actual_pps": 1000.1
+            }
+          ]
+        },
+        {
+          "target_pps": 5000,
+          "valid_pairs": 3,
+          "total_pairs": 3,
+          "modes": [
+            {
+              "rx": "batch",
+              "idle": "sleep",
+              "valid_comparable_trials": 3,
+              "median_queue_p99_us": 226.596,
+              "median_active_cpu_us_frame": 20.669,
+              "median_syscalls_per_frame": 0.993333,
+              "median_actual_pps": 5002.9
+            },
+            {
+              "rx": "scalar",
+              "idle": "sleep",
+              "valid_comparable_trials": 3,
+              "median_queue_p99_us": 178.15,
+              "median_active_cpu_us_frame": 19.243,
+              "median_syscalls_per_frame": 1.0,
+              "median_actual_pps": 5002.8
+            },
+            {
+              "rx": "batch",
+              "idle": "spin",
+              "valid_comparable_trials": 3,
+              "median_queue_p99_us": 2.843,
+              "median_active_cpu_us_frame": 209.481,
+              "median_syscalls_per_frame": 0.99,
+              "median_actual_pps": 5002.9
+            },
+            {
+              "rx": "scalar",
+              "idle": "spin",
+              "valid_comparable_trials": 3,
+              "median_queue_p99_us": 185.109,
+              "median_active_cpu_us_frame": 203.91,
+              "median_syscalls_per_frame": 1.0,
+              "median_actual_pps": 5002.2
+            }
+          ]
+        }
+      ],
+      "valid_group_count": 6,
+      "total_group_count": 6
+    }
+  ],
+  "limitations": [
+    "All 48 trials were real UDP sockets, but no NIC timestamps, perf hardware counters, cross-host traffic or throughput saturation.",
+    "A good loopback queue p99 is not evidence of end-to-end wire latency.",
+    "This report retains summary metrics and full original-report SHA256; the accompanying archive contains all full 48 trial summaries.",
+    "Different run-to-run p99 ordering makes it unsafe to claim a stable syscall-mode speedup on this shared Linux host."
+  ]
+}
