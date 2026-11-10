@@ -36,6 +36,8 @@ python3 scripts/benchmark_native_sender.py \
 
 For routing reproduction, see [isolated kernel lab](docs/CORE_EVIDENCE_20261108.md), [kernel observability](docs/KERNEL_OBSERVABILITY.md), and [three-router BGP instructions](labs/three-router/README.md).
 
+**Latest correctness audit (2026-11-10):** A final batched `recvmmsg` call previously could remove extra kernel datagrams beyond the target without counting them. The receiver now bounds the last batch and enforces syscall-consumed versus processed-datagram accounting. This is a reliability correction, **not** a latency improvement. [Reproduction and limits](docs/UDP_RECEIVE_TARGET_AUDIT.md).
+
 ## Important boundaries
 
 - **Not measured:** NIC hardware timestamps, exchange market data, wire-to-wire latency, maximum sustainable line rate, cross-host time synchronization, `perf` flamegraphs, or real BGP convergence times.

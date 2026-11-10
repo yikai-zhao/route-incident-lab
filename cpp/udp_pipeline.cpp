@@ -187,7 +187,7 @@ int run(int argc, char** argv) {
   size_t queue_highwater=0;
   uint32_t overflow_cumulative=0;
   bool overflow_reported=false;
-  uint64_t successful_rx_syscalls=0, first_receive_ns=0, last_receive_ns=0;
+  uint64_t successful_rx_syscalls=0, rx_datagrams_consumed_by_syscalls=0, first_receive_ns=0, last_receive_ns=0;
   long long first_receive_cpu_ns=0;
   const auto cpu_start=cpu_ns(CLOCK_PROCESS_CPUTIME_ID);
   const auto deadline=Clock::now()+std::chrono::milliseconds(timeout_ms);
@@ -220,15 +220,22 @@ int run(int argc, char** argv) {
       }
       int got=0;
       if (batch) {
-        got=::recvmmsg(socket_fd.fd,messages,slots,MSG_DONTWAIT,nullptr);
+        // A batch must not consume more datagrams than the target remainder.
+        // Previously, the final recvmmsg could silently drain extra frames.
+        const unsigned int vlen = static_cast<unsigned int>(
+            std::min<size_t>(static_cast<size_t>(slots), target-received));
+        got=::recvmmsg(socket_fd.fd,messages,vlen,MSG_DONTWAIT,nullptr);
       } else {
         const int bytes=::recvmsg(socket_fd.fd,&messages[0].msg_hdr,MSG_DONTWAIT);
         if(bytes>=0) {messages[0].msg_len=static_cast<unsigned int>(bytes);got=1;}
         else got=-1;
       }
       if(got<0){if(errno==EAGAIN||errno==EINTR)continue;throw std::runtime_error("UDP receive failed");}
-      if(got>0) ++successful_rx_syscalls;
-      for(int i=0;i<got && received<target;++i){
+      if(got>0) {
+        ++successful_rx_syscalls;
+        rx_datagrams_consumed_by_syscalls += static_cast<uint64_t>(got);
+      }
+      for(int i=0;i<got;++i){
         ++received;
         const uint64_t received_at=static_cast<uint64_t>(monotonic_ns());
         if(!first_receive_ns) { first_receive_ns=received_at; first_receive_cpu_ns=cpu_ns(CLOCK_PROCESS_CPUTIME_ID); }
@@ -258,12 +265,15 @@ int run(int argc, char** argv) {
   const auto active_cpu_ns=total_cpu_ns-startup_cpu_ns;
   rusage usage{};
   if (::getrusage(RUSAGE_SELF,&usage)<0) throw std::runtime_error("getrusage failed");
+  if (rx_datagrams_consumed_by_syscalls != received)
+    throw std::runtime_error("inconsistent syscall-versus-datagram accounting");
   if (valid != consumer.processed+queue_dropped) throw std::runtime_error("inconsistent queue accounting");
   std::sort(consumer.queue_delay_us.begin(),consumer.queue_delay_us.end());
   std::cout<<"{\"engine\":\"spsc_epoll_udp\",\"receive_mode\":\""<<(batch?"batch":"scalar")
            <<"\",\"sink\":\""<<(write_jsonl?"jsonl":"none")
            <<"\",\"consumer_idle_strategy\":\""<<(spin_wait?"spin":"sleep100us")
            <<"\",\"rx_successful_syscalls\":"<<successful_rx_syscalls
+           <<",\"rx_datagrams_consumed_by_syscalls\":"<<rx_datagrams_consumed_by_syscalls
            <<",\"rx_datagrams_per_successful_call\":"<<(successful_rx_syscalls ? static_cast<double>(received)/successful_rx_syscalls : 0.)
            <<",\"receiver_active_window_ns\":"<<(first_receive_ns ? last_receive_ns-first_receive_ns : 0)
            <<",\"process_cpu_ns\":"<<total_cpu_ns
