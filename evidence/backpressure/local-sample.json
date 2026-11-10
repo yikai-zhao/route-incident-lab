@@ -1,0 +1,68 @@
+{
+  "scope": "local_udp_application_backpressure_accounting",
+  "status": "PASS",
+  "kernel": "6.18.57",
+  "count_per_trial": 600,
+  "target_pps": 1000,
+  "pair_count": 3,
+  "valid_pairs": 3,
+  "median_pressure_app_drops": 418,
+  "pairs": [
+    {
+      "pair": 0,
+      "order": [
+        "control",
+        "pressured"
+      ],
+      "valid": true,
+      "reject_reasons": [],
+      "control_app_drops": 0,
+      "pressured_app_drops": 418,
+      "control_achieved_pps": 1000.33,
+      "pressured_achieved_pps": 1000.13,
+      "control_sha256": "cbbea3a1e3acc207dd4003da36074b5c639d864bac022a4d19d20709eee72b02",
+      "pressured_sha256": "da3b7ab1edb5d6b30719b31da25e6e90db189613d0796b20ebc798516be40f8b"
+    },
+    {
+      "pair": 1,
+      "order": [
+        "pressured",
+        "control"
+      ],
+      "valid": true,
+      "reject_reasons": [],
+      "control_app_drops": 0,
+      "pressured_app_drops": 418,
+      "control_achieved_pps": 999.999,
+      "pressured_achieved_pps": 1000.07,
+      "control_sha256": "61b2a578939c96d70d348e1e62594b2f589b5e22ab393ba38518091d2f3c99bd",
+      "pressured_sha256": "af47fdf4fd509735a6f8ec3ca1870f74e5bda9fda2f232608ae42c7803545ab0"
+    },
+    {
+      "pair": 2,
+      "order": [
+        "control",
+        "pressured"
+      ],
+      "valid": true,
+      "reject_reasons": [],
+      "control_app_drops": 0,
+      "pressured_app_drops": 418,
+      "control_achieved_pps": 1000.04,
+      "pressured_achieved_pps": 1000.12,
+      "control_sha256": "3429f87af0c50ad2eab2d12ecd7514d675398974228e50c503d3657e4688be15",
+      "pressured_sha256": "a5b8b59e75d853a94f7e7d54813c4bcce5f27c1f9f94ebc3885dd4806a977e1d"
+    }
+  ],
+  "limitations": [
+    "Local host UDP only; no network wire-loss inference.",
+    "Intentional 5000us consumer sleep and 64-slot queue create artificial backpressure.",
+    "SO_RXQ_OVFL reports only drops observed through later delivered ancillary records; zero does not prove no kernel loss.",
+    "Publisher target pacing is not achieved load; paired comparisons require measured rates within 5%.",
+    "Tests reject mixed kernel overflow and application backpressure; no HFT throughput or tail-latency claim."
+  ],
+  "upstream_blob_sha": {
+    "cpp/udp_pipeline.cpp": "ac87a950420ac04e8ce92c519e74e00e84c74a7a",
+    "cpp/udp_publisher.cpp": "e81451db1382383e8c8c8954e507945c04313ec8"
+  }
+}
