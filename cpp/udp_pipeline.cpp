@@ -4,6 +4,7 @@
 #include "spsc_ring.h"
 #include <arpa/inet.h>
 #include <sys/epoll.h>
+#include <sys/eventfd.h>
 #include <sys/socket.h>
 #include <sys/resource.h>
 #include <time.h>
@@ -88,16 +89,17 @@ struct ConsumerStats {
 
 int run(int argc, char** argv) {
   if (argc < 8 || argc > 11) throw std::invalid_argument(
-    "usage: udp_pipeline GROUP_OR_DASH PORT DATAGRAM_COUNT TIMEOUT_MS CAPACITY CONSUMER_DELAY_US OUTPUT.jsonl [--rx=batch|scalar] [--sink=jsonl|none] [--idle=sleep|spin]");
-  bool batch=true, write_jsonl=true, spin_wait=false;
+    "usage: udp_pipeline GROUP_OR_DASH PORT DATAGRAM_COUNT TIMEOUT_MS CAPACITY CONSUMER_DELAY_US OUTPUT.jsonl [--rx=batch|scalar] [--sink=jsonl|none] [--idle=sleep|spin|eventfd]");
+  bool batch=true, write_jsonl=true, spin_wait=false, eventfd_wait=false;
   for (int i=8;i<argc;++i) {
     const std::string flag=argv[i];
     if(flag=="--rx=batch") batch=true;
     else if(flag=="--rx=scalar") batch=false;
     else if(flag=="--sink=jsonl") write_jsonl=true;
     else if(flag=="--sink=none") write_jsonl=false;
-    else if(flag=="--idle=sleep") spin_wait=false;
-    else if(flag=="--idle=spin") spin_wait=true;
+    else if(flag=="--idle=sleep") {spin_wait=false;eventfd_wait=false;}
+    else if(flag=="--idle=spin") {spin_wait=true;eventfd_wait=false;}
+    else if(flag=="--idle=eventfd") {spin_wait=false;eventfd_wait=true;}
     else throw std::invalid_argument("unknown receive/sink option: "+flag);
   }
   const std::string group=argv[1];
@@ -139,6 +141,22 @@ int run(int argc, char** argv) {
   if (::epoll_ctl(epoll_fd.fd,EPOLL_CTL_ADD,socket_fd.fd,&interest)<0)
     throw std::runtime_error("epoll add failed");
 
+  // Blocking eventfd avoids periodic sleep polling without spinning. Every
+  // successful SPSC enqueue contributes one token, so an enqueue between the
+  // empty-ring check and read() is retained by the kernel: no lost wakeup.
+  // This intentionally adds a producer syscall per accepted frame; it is a
+  // correctness-first baseline, not a claim of a universally faster datapath.
+  Fd wake_fd(eventfd_wait ? ::eventfd(0, EFD_CLOEXEC) : -1);
+  if (eventfd_wait && wake_fd.fd < 0) throw std::runtime_error("eventfd create failed");
+  uint64_t wake_writes=0, wake_reads=0;
+  auto signal_consumer = [&] {
+    if (!eventfd_wait) return;
+    const uint64_t one=1;
+    ssize_t n;
+    do { n=::write(wake_fd.fd,&one,sizeof(one)); } while (n<0 && errno==EINTR);
+    if (n!=static_cast<ssize_t>(sizeof(one))) throw std::runtime_error("eventfd write failed");
+    ++wake_writes;
+  };
   std::atomic<bool> completed{false};
   ConsumerStats consumer;
   // Preallocate bounded sample storage before starting the consumer thread.
@@ -160,7 +178,17 @@ int run(int argc, char** argv) {
       rusage active_usage_start{};
       while (!completed.load(std::memory_order_acquire) || queue.size_approx()>0) {
         if (!queue.try_pop(packet)) {
-          if (!spin_wait) std::this_thread::sleep_for(std::chrono::microseconds(100));
+          if (eventfd_wait) {
+            if (completed.load(std::memory_order_acquire)) break;
+            uint64_t tokens=0;
+            ssize_t n;
+            do { n=::read(wake_fd.fd,&tokens,sizeof(tokens)); }
+            while (n<0 && errno==EINTR);
+            if (n!=static_cast<ssize_t>(sizeof(tokens))) throw std::runtime_error("eventfd read failed");
+            ++wake_reads;
+          } else if (!spin_wait) {
+            std::this_thread::sleep_for(std::chrono::microseconds(100));
+          }
           continue;
         }
         if (active_cpu_start<0) {
@@ -275,7 +303,10 @@ int run(int argc, char** argv) {
         ++valid;
         Packet sample{get_u32(data[i]+4),get_u64(data[i]+8),received_at};
         if(!queue.try_push(sample))++queue_dropped;
-        else queue_highwater=std::max(queue_highwater,queue.size_approx());
+        else {
+          queue_highwater=std::max(queue_highwater,queue.size_approx());
+          signal_consumer();
+        }
         for(auto* c=CMSG_FIRSTHDR(const_cast<msghdr*>(&msg.msg_hdr));c;
                  c=CMSG_NXTHDR(const_cast<msghdr*>(&msg.msg_hdr),c)){
           if(c->cmsg_level==SOL_SOCKET && c->cmsg_type==SO_RXQ_OVFL && c->cmsg_len>=CMSG_LEN(sizeof(uint32_t))) {
@@ -284,8 +315,13 @@ int run(int argc, char** argv) {
         }
       }
     }
-  } catch (...) { completed.store(true,std::memory_order_release);worker.join();throw; }
+  } catch (...) {
+    completed.store(true,std::memory_order_release);
+    try { signal_consumer(); } catch (...) { /* preserve primary failure */ }
+    worker.join();throw;
+  }
   completed.store(true,std::memory_order_release);
+  signal_consumer();
   worker.join();
   if(worker_error)std::rethrow_exception(worker_error);
   if(write_jsonl) { output.flush();if(!output)throw std::runtime_error("output flush failed"); }
@@ -300,7 +336,7 @@ int run(int argc, char** argv) {
   std::sort(consumer.queue_delay_us.begin(),consumer.queue_delay_us.end());
   std::cout<<"{\"engine\":\"spsc_epoll_udp\",\"receive_mode\":\""<<(batch?"batch":"scalar")
            <<"\",\"sink\":\""<<(write_jsonl?"jsonl":"none")
-           <<"\",\"consumer_idle_strategy\":\""<<(spin_wait?"spin":"sleep100us")
+           <<"\",\"consumer_idle_strategy\":\""<<(eventfd_wait?"eventfd":(spin_wait?"spin":"sleep100us"))
            <<"\",\"rx_successful_syscalls\":"<<successful_rx_syscalls
            <<",\"rx_datagrams_consumed_by_syscalls\":"<<rx_datagrams_consumed_by_syscalls
            <<",\"rx_datagrams_per_successful_call\":"<<(successful_rx_syscalls ? static_cast<double>(received)/successful_rx_syscalls : 0.)
@@ -309,6 +345,8 @@ int run(int argc, char** argv) {
            <<",\"process_cpu_startup_ns\":"<<startup_cpu_ns
            <<",\"process_cpu_active_ns\":"<<active_cpu_ns
            <<",\"queue_sample_capacity_grows\":"<<consumer.queue_sample_capacity_grows
+           <<",\"eventfd_notification_writes\":"<<wake_writes
+           <<",\"eventfd_wakeup_reads\":"<<wake_reads
            <<",\"consumer_thread_cpu_ns\":"<<worker_cpu_ns
            <<",\"consumer_active_cpu_ns\":"<<worker_active_cpu_ns
            <<",\"consumer_active_voluntary_context_switches\":"<<worker_active_voluntary_switches

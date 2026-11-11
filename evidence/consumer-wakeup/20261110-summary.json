@@ -1,0 +1,207 @@
+{
+  "baseline_main": "ed42dc8bac79d49ff333260d03369479076bbf35",
+  "campaigns": [
+    {
+      "accepted_triplets": 8,
+      "name": "first",
+      "rates": {
+        "1000": {
+          "eventfd": {
+            "consumer_active_cpu_ms_median": 4.014,
+            "eventfd_notification_writes_median": 601.0,
+            "eventfd_wakeup_reads_median": 598.0,
+            "observed_pps_median": 1000.09,
+            "queue_p99_us_median": 125.49,
+            "queue_p99_us_range": [
+              27.978,
+              173.624
+            ],
+            "receiver_process_active_cpu_ms_median": 15.256,
+            "voluntary_context_switches_median": 597.0
+          },
+          "sleep": {
+            "consumer_active_cpu_ms_median": 41.04,
+            "eventfd_notification_writes_median": 0.0,
+            "eventfd_wakeup_reads_median": 0.0,
+            "observed_pps_median": 1000.145,
+            "queue_p99_us_median": 177.382,
+            "queue_p99_us_range": [
+              159.732,
+              1495.74
+            ],
+            "receiver_process_active_cpu_ms_median": 45.439,
+            "voluntary_context_switches_median": 3559.0
+          },
+          "spin": {
+            "consumer_active_cpu_ms_median": 598.188,
+            "eventfd_notification_writes_median": 0.0,
+            "eventfd_wakeup_reads_median": 0.0,
+            "observed_pps_median": 1000.05,
+            "queue_p99_us_median": 567.811,
+            "queue_p99_us_range": [
+              242.62,
+              1692.13
+            ],
+            "receiver_process_active_cpu_ms_median": 603.713,
+            "voluntary_context_switches_median": 0.0
+          }
+        },
+        "5000": {
+          "eventfd": {
+            "consumer_active_cpu_ms_median": 1.994,
+            "eventfd_notification_writes_median": 601.0,
+            "eventfd_wakeup_reads_median": 563.0,
+            "observed_pps_median": 5003.015,
+            "queue_p99_us_median": 639.673,
+            "queue_p99_us_range": [
+              68.626,
+              4688.36
+            ],
+            "receiver_process_active_cpu_ms_median": 8.672,
+            "voluntary_context_switches_median": 561.0
+          },
+          "sleep": {
+            "consumer_active_cpu_ms_median": 9.2,
+            "eventfd_notification_writes_median": 0.0,
+            "eventfd_wakeup_reads_median": 0.0,
+            "observed_pps_median": 5002.76,
+            "queue_p99_us_median": 171.07,
+            "queue_p99_us_range": [
+              161.201,
+              192.623
+            ],
+            "receiver_process_active_cpu_ms_median": 11.434,
+            "voluntary_context_switches_median": 723.5
+          },
+          "spin": {
+            "consumer_active_cpu_ms_median": 119.531,
+            "eventfd_notification_writes_median": 0.0,
+            "eventfd_wakeup_reads_median": 0.0,
+            "observed_pps_median": 5004.68,
+            "queue_p99_us_median": 732.337,
+            "queue_p99_us_range": [
+              0.589,
+              2893.77
+            ],
+            "receiver_process_active_cpu_ms_median": 125.033,
+            "voluntary_context_switches_median": 0.0
+          }
+        }
+      },
+      "raw_filename": "eventfd-benchmark.json",
+      "raw_sha256": "8dda635d213801a2024fa4b9a158331815df619662f3d279374d319239f1db09",
+      "seed": 10271110,
+      "total_trials": 24
+    },
+    {
+      "accepted_triplets": 10,
+      "name": "independent",
+      "rates": {
+        "1000": {
+          "eventfd": {
+            "consumer_active_cpu_ms_median": 3.865,
+            "eventfd_notification_writes_median": 601,
+            "eventfd_wakeup_reads_median": 598,
+            "observed_pps_median": 1000.06,
+            "queue_p99_us_median": 129.39,
+            "queue_p99_us_range": [
+              95.123,
+              1081.16
+            ],
+            "receiver_process_active_cpu_ms_median": 14.881,
+            "voluntary_context_switches_median": 596
+          },
+          "sleep": {
+            "consumer_active_cpu_ms_median": 40.786,
+            "eventfd_notification_writes_median": 0,
+            "eventfd_wakeup_reads_median": 0,
+            "observed_pps_median": 1000.04,
+            "queue_p99_us_median": 178.695,
+            "queue_p99_us_range": [
+              161.781,
+              453.513
+            ],
+            "receiver_process_active_cpu_ms_median": 45.816,
+            "voluntary_context_switches_median": 3655
+          },
+          "spin": {
+            "consumer_active_cpu_ms_median": 598.786,
+            "eventfd_notification_writes_median": 0,
+            "eventfd_wakeup_reads_median": 0,
+            "observed_pps_median": 1000.06,
+            "queue_p99_us_median": 303.314,
+            "queue_p99_us_range": [
+              85.465,
+              990.231
+            ],
+            "receiver_process_active_cpu_ms_median": 605.519,
+            "voluntary_context_switches_median": 0
+          }
+        },
+        "5000": {
+          "eventfd": {
+            "consumer_active_cpu_ms_median": 2.16,
+            "eventfd_notification_writes_median": 601,
+            "eventfd_wakeup_reads_median": 590,
+            "observed_pps_median": 5003.68,
+            "queue_p99_us_median": 86.964,
+            "queue_p99_us_range": [
+              65.728,
+              937.107
+            ],
+            "receiver_process_active_cpu_ms_median": 8.634,
+            "voluntary_context_switches_median": 587
+          },
+          "sleep": {
+            "consumer_active_cpu_ms_median": 9.25,
+            "eventfd_notification_writes_median": 0,
+            "eventfd_wakeup_reads_median": 0,
+            "observed_pps_median": 5002.66,
+            "queue_p99_us_median": 174.869,
+            "queue_p99_us_range": [
+              162.464,
+              645.612
+            ],
+            "receiver_process_active_cpu_ms_median": 11.423,
+            "voluntary_context_switches_median": 722
+          },
+          "spin": {
+            "consumer_active_cpu_ms_median": 119.576,
+            "eventfd_notification_writes_median": 0,
+            "eventfd_wakeup_reads_median": 0,
+            "observed_pps_median": 5001.87,
+            "queue_p99_us_median": 27.903,
+            "queue_p99_us_range": [
+              9.049,
+              85.047
+            ],
+            "receiver_process_active_cpu_ms_median": 123.349,
+            "voluntary_context_switches_median": 0
+          }
+        }
+      },
+      "raw_filename": "eventfd-benchmark-independent.json",
+      "raw_sha256": "9716e4983ad637f364be53b68bd9d1a26ab540e608d7ab7b136fba56eae99fd5",
+      "seed": 3311042,
+      "total_trials": 30
+    }
+  ],
+  "data_source": "synthetic locally generated UDP packets, NOT production or exchange feed",
+  "enforced_gates": "sender 100% success, receiver lossless, sequence clean, achieved target +-10%, three modes within 5% target",
+  "experiment": "three-mode Linux UDP SPSC consumer wakeup comparison",
+  "important_caveats": [
+    "eventfd uses one write syscall per successful queue enqueue, plus termination; not a coalesced fast path",
+    "consumer_active_cpu_ns starts at first dequeued frame and includes waiting and work until worker exit",
+    "process_cpu_active_ns is whole receiver process CPU after first received frame, not only consumer CPU",
+    "sample p99 is application queue residence from user-space receive to consumer dequeue, not wire-to-wire latency",
+    "container scheduling causes large per-round tail variability; no stable p99 speedup is established",
+    "independent random orders do not imply independent machines or production validation"
+  ],
+  "publisher_source_git_blob": "e81451db1382383e8c8c8954e507945c04313ec8",
+  "receiver_source_git_blob": "5cc460044ceef600fc3385f69ee98f6bccd23070",
+  "schema_version": 1,
+  "scope": "real localhost UDP sockets; shared container scheduling; not NIC/wire latency",
+  "spsc_source_git_blob": "3550edcadfcca759eb6009ce744fba94a1cdd1a3",
+  "total_matched_triplets": 18,
+  "total_trials": 54
+}
