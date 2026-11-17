@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
+from unittest.mock import patch
 
 SCRIPT = Path(__file__).resolve().parents[1] / "scripts/run_frr_campaign.py"
 spec = importlib.util.spec_from_file_location("run_frr_campaign", SCRIPT)
@@ -39,7 +40,14 @@ class EvidenceGateTests(unittest.TestCase):
     def test_valid_then_tampered(self):
         with tempfile.TemporaryDirectory() as tmp:
             folder = valid_trial(Path(tmp))
-            self.assertEqual(campaign.inspect_trial(folder, "backup_failover", 1)["status"], "PASS")
+            # A self-reported PASS fixture is not authentic real-lab evidence.
+            self.assertEqual(campaign.inspect_trial(folder, "backup_failover", 1)["status"], "FAIL")
+            # Test the remaining gate logic with a controlled audit double.
+            saved = json.loads((folder / "audit.json").read_text())
+            with patch.object(campaign, "recompute_audit", return_value={
+                "verdict": "PASS", "sha256_of_inputs": saved.get("sha256_of_inputs")
+            }):
+                self.assertEqual(campaign.inspect_trial(folder, "backup_failover", 1)["status"], "PASS")
             (folder / "audit.json").write_text('{"verdict":"PASS","checks":{"x":false}}')
             self.assertEqual(campaign.inspect_trial(folder, "backup_failover", 1)["status"], "FAIL")
             (folder / "audit.json").unlink()
