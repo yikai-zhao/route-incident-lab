@@ -2,6 +2,10 @@
 
 A reproducible Linux networking lab for investigating **routing failures, packet-processing backpressure, and the latency/CPU cost of design choices**. It combines read-only routing-state capture, fault reproduction, and a small C++17 UDP data path. The aim is to explain *why* a failure happens, not to claim HFT-grade latency from loopback measurements.
 
+## Dynamic BGP validation (2026-11-17)
+
+Real FRR/Containerlab BGP failover **has not been executed in this development environment**. A new [nine-trial local campaign with an independent evidence gate](docs/FRR_LIVE_CAMPAIGN.md) turns that gap into a reproducible operator procedure. The existing Linux static-route fault experiment must not be described as dynamic BGP reconvergence.
+
 ## Two engineering problems
 
 **1. Packet processing under load (C++17/Linux).** The two-thread UDP receiver uses nonblocking sockets, `epoll`, optional batched `recvmmsg`, a preallocated bounded SPSC queue, and per-stream sequence accounting. It independently tracks malformed messages, queue drops, available kernel RX overflow signals and application queue residence. A loopback-only C++ publisher paces with absolute `CLOCK_MONOTONIC` deadlines and measures the *actual* `sendto` rate and jitter.
