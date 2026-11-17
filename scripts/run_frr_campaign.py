@@ -13,6 +13,8 @@ import subprocess
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "scripts"))
+from audit_run import audit as recompute_audit  # offline, read-only
 SCENARIOS = ("neighbor_outage", "backup_failover", "route_ok_blackhole")
 REQUIRED = ("bgp-preflight.json", "before.json", "fault.json", "recovered.json",
             "continuous-http-samples.json", "report.json", "audit.json")
@@ -35,6 +37,11 @@ def inspect_trial(folder: Path, scenario: str, repetition: int) -> dict:
         values = {name: json.loads((folder / name).read_text()) for name in REQUIRED}
         audit, report, bgp = (values["audit.json"], values["report.json"],
                               values["bgp-preflight.json"])
+        fresh = recompute_audit(folder)
+        if fresh.get("verdict") != "PASS":
+            errors.append("fresh independent evidence audit failed")
+        if audit.get("sha256_of_inputs") != fresh.get("sha256_of_inputs"):
+            errors.append("saved audit digests do not match current evidence")
         samples = values["continuous-http-samples.json"]
         if audit.get("verdict") != "PASS":
             errors.append("independent audit not PASS")
